@@ -1,0 +1,3 @@
+[submodule "Servo42C_uart"]
+	path = Servo42C_uart
+	url = git@github.com:AtelierdeZenobe/Servo42C_uart.git
