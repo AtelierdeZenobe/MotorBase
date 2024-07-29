@@ -1,13 +1,42 @@
 #include"motor.h"
 #include<iostream>
+#include <vector>
 //#include "message.h"
 #include "functionCodes.h"
-Motor::Motor(uint8_t address, Position position) : m_address(address), m_position(position)
+#include "uartmap.h"
+
+Motor::Motor(uint8_t address, EventQueue* evQueue) : m_address(address), m_evQueue(evQueue)
 {
-    printf("Initialised motor %02x at position (%02x,%02x,%02x)\n", m_address, m_position.x, m_position.y, m_position.t);
+    auto it = UART_MAP.find(m_address);
+    printMutex.lock();
+    printf("Initializing motor's uart.\n");
+    printMutex.unlock();
+    if(it != UART_MAP.end())
+    {
+        auto pins = it->second;
+        m_uartCOM = new UartCOM(pins.first, pins.second);
+    }
+    else
+    {
+        // Should start looking for uart with a send receive logic
+        // For now, UART 6
+        printMutex.lock();
+        printf("%02x| Could not find address in uart map.\n", m_address);
+        printMutex.unlock();
+        m_uartCOM = new UartCOM(PC_6, PC_7);
+    }
+    printMutex.lock();
+    printf("Initialised motor %02x.\n", m_address);
+    printMutex.unlock();
 }
 
-bool Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
+Motor::~Motor()
+{
+    delete(m_uartCOM);
+    delete(m_evQueue);
+}
+
+void Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
 {
     bool success = true;
     // Check arguments
@@ -15,12 +44,16 @@ bool Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
     if(direction>1)
     {
         success = false;
+        printMutex.lock();
         printf("Motor::Go| direction is greater than 1 (%02x).\n", direction);
+        printMutex.unlock();
     }
     else if (nbSteps < 0)
     {
         success = false;
+        printMutex.lock();
         printf("Motor::Go| nbSteps is less than 0 (%02x).\n", nbSteps);
+        printMutex.unlock();
     }
 
     //TODO: check for max RPM
@@ -34,11 +67,27 @@ bool Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
         data.push_back(static_cast<uint8_t>((nbSteps >> 16) & 0xFF));
         data.push_back(static_cast<uint8_t>((nbSteps >> 8) & 0xFF));
         data.push_back(static_cast<uint8_t>(nbSteps & 0xFF));
-        Message messageOut = Message(m_address, RUN_DIR_PULSES, data);
-        messageOut.display();
+        Message* messageOut = new Message(m_address, RUN_DIR_PULSES, data);
+        messageOut->display();
         Message messageIn;
-        m_uartCOM.Send(messageOut, messageIn);
+        
+        // TODO: clarify
+        auto lambda = [this, &messageIn, messageOut]()
+        {
+            m_uartCOM->Send(messageOut, messageIn);
+        };
+        m_evQueue->call(lambda);
+        //m_evQueue->dispatch_once();
+        //m_uartCOM->Send(messageOut, messageIn);
     }
 
-    return success;
+    //return success;
+}
+
+bool Motor::Calibrate()
+{
+    Message * messageOut = new Message(m_address, CALIBRATE, std::vector<uint8_t>());
+    Message messageIn;
+    m_uartCOM->Send(messageOut, messageIn);
+    return true;
 }

@@ -1,12 +1,8 @@
 #include <cstdint> // For uint8_t
 #include "mbed.h"
 #include "uartCOM.h"
-struct Position
-{
-    uint8_t x = 0x00;
-    uint8_t y = 0x00;
-    uint8_t t = 0x00;
-};
+#include <queue>
+#include <functional>
 
 /**
 * @brief: Represents a single motor.
@@ -17,13 +13,15 @@ struct Position
 class Motor
 {
     public:
-    Motor(uint8_t address, Position position);
-    bool Go(uint8_t direction, uint8_t speed, uint32_t nbSteps);
+    Motor(uint8_t address, EventQueue* evQueue);
+    ~Motor();
+    void Go(uint8_t direction, uint8_t speed, uint32_t nbSteps);
+    bool Calibrate();
     bool SetZero();
     bool GoToZero();
 
     private:
+    EventQueue *m_evQueue;
     uint8_t m_address = 0xE0;
-    UartCOM m_uartCOM = UartCOM(); // Each motor will have its own uart com.
-    Position m_position = {0x00, 0x00, 0x00}; // TODO: put the initial position
+    UartCOM * m_uartCOM;// = UartCOM(PC_10, PC_11); // Each motor will have its own uart com.
 };
