@@ -4,6 +4,10 @@
 #include <queue>
 #include <functional>
 
+#define MOTOR_1 0
+#define MOTOR_2 1
+#define MOTOR_3 2
+
 /**
 * @brief: Represents a single motor.
 * 

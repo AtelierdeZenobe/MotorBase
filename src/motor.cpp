@@ -9,7 +9,7 @@ Motor::Motor(uint8_t address, EventQueue* evQueue) : m_address(address), m_evQue
 {
     auto it = UART_MAP.find(m_address);
     printMutex.lock();
-    printf("Initializing motor's uart.\n");
+    //printf("Initializing motor's uart.\n");
     printMutex.unlock();
     if(it != UART_MAP.end())
     {
@@ -21,12 +21,12 @@ Motor::Motor(uint8_t address, EventQueue* evQueue) : m_address(address), m_evQue
         // Should start looking for uart with a send receive logic
         // For now, UART 6
         printMutex.lock();
-        printf("%02x| Could not find address in uart map.\n", m_address);
+        //printf("%02x| Could not find address in uart map.\n", m_address);
         printMutex.unlock();
         m_uartCOM = new UartCOM(PC_6, PC_7);
     }
     printMutex.lock();
-    printf("Initialised motor %02x.\n", m_address);
+    //printf("Initialised motor %02x.\n", m_address);
     printMutex.unlock();
 }
 
@@ -38,21 +38,22 @@ Motor::~Motor()
 
 void Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
 {
-    bool success = true;
-    // Check arguments
 
+    bool success = true;
+
+    // Check arguments
     if(direction>1)
     {
         success = false;
         printMutex.lock();
-        printf("Motor::Go| direction is greater than 1 (%02x).\n", direction);
+        //printf("Motor::Go| direction is greater than 1 (%02x).\n", direction);
         printMutex.unlock();
     }
     else if (nbSteps < 0)
     {
         success = false;
         printMutex.lock();
-        printf("Motor::Go| nbSteps is less than 0 (%02x).\n", nbSteps);
+        //printf("Motor::Go| nbSteps is less than 0 (%02x).\n", nbSteps);
         printMutex.unlock();
     }
 
