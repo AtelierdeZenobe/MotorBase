@@ -1,25 +1,21 @@
 #include "mbed.h"
 #include <cstdint> // For uint8_t
 #include <iostream>
+#include <cmath> //For trigonometric functions
 #include "motor.h"
+#include "robot.h"
 
 #include "matrix-master/dist/matrix.h"
 //TODO: Find why we can't print to the console
 // For now: -> Switch USB
 
-#define SIN60 .866025
-#define SIN180 -1.000000
-#define SIN300 -.866025
-#define COS60 .500000
-#define COS180 0.000000
-#define COS300 -.500000
-#define R 116
-#define B 30
 #define MSTEP 2
 #define TPR 200 * MSTEP
 #define PI 3.141592
 #define DPR PI * 2 * B
 #define DPT DPR / TPR
+
+
 
 
 int main()
@@ -33,49 +29,52 @@ int main()
     //Motor dummy_motor(0x69, &EVqueue); // No uart mapped to 0x69 -> Will wait for an answer forever
     //dummy_motor.Go(1, 1, 200);
 
-
-
 // Kinematics (p29) : https://pure.tue.nl/ws/portalfiles/portal/4274124/612987.pdf
-    Matrix m(3,3);
-    m(0,0) = -SIN60;
-    m(0,1) = COS60;
-    m(0,2) = R;
-    m(1,0) = -SIN180;
-    m(1,1) = COS180;
-    m(1,2) = R;
-    m(2,0) = -SIN300;
-    m(2,1) = COS300;
-    m(2,2) = R;
-    m = (1.0/B) * m;
+
+    const uint8_t motors = 3; //MAX 9
+    auto robot = new Robot<motors>(&EVqueue);
+    robot->setMotors();
+    robot->setMatrix(116.0f, 30.0f, 60.0f, 0.0f, 120.0f, 240.0f);
+    robot->setVelocity(100.0f, 0.0f, 0.0f)->findPhi();
 
 
-    float Vx = 0;
-    float Vy = 100;
-    float w = 100;
+    //std::cout << *(robot->getPhi()) << std::endl;
 
-    Matrix v(3,1);
-    v(0,0) = Vx;
-    v(1,0) = Vy;
-    v(2,0) = w;
+    //auto phi = robot->setVelocity(100.0f, 0.0f, 0.0f)->getPhi();
+
+    std::cout << robot->absPhi(2) << std::endl;
+
+    //robot->getMotor(Robot<motors>::Motors::Motor3)
+        //->Go(static_cast<uint8_t>(Robot<motors>::Direction::CounterClockWise),robot->absPhi(2),200);
     
-    Matrix phi(3,1);
+    
+
+
+
+    /*Motor* motors[3] = { new Motor(0xE1, &EVqueue), new Motor(0xE2, &EVqueue), new Motor(0xE3, &EVqueue) };
+
+    robot->setMotor(new Motor(0xE1, &EVqueue));
+    robot->setMotor(new Motor(0xE2, &EVqueue));
+    robot->setMotor(new Motor(0xE3, &EVqueue));*/
+    
+
+    //(*phi)(0,0) > 0 ? motors[MOTOR_1]->Go(0, (*phi)(0,0), 200/*v(0,0)/DPT*/) : motors[MOTOR_1]->Go(1, -(*phi)(0,0), 200/*v(0,0)/DPT*/) ;
+    //(*phi)(1,0) > 0 ? motors[MOTOR_2]->Go(0, (*phi)(1,0), 200/*v(1,0)/DPT*/) : motors[MOTOR_2]->Go(1, -(*phi)(1,0), 200/*v(1,0)/DPT*/) ;
+    //(*phi)(2,0) > 0 ? motors[MOTOR_3]->Go(0, (*phi)(2,0), 200/*v(2,0)/DPT*/) : motors[MOTOR_3]->Go(1, -(*phi)(2,0), 200/*v(2,0)/DPT*/) ;
+    
+    //motors[MOTOR_1]->Go(static_cast<uint8_t>(Robot<wheels>::Direction::Clockwise),1,200);
+    //motors[MOTOR_2]->Go(1,1,200);
+    //motors[MOTOR_3]->Go(1,1,200);
+
+    //robot->Move(100.0f, 0.0f, 0.0f); //Moves 100 along x-axis 
+    //robot->Move(0.0f, 0.0f, 100.0f); //Turns 100
 
     
-    phi = m * v;
 
-    Motor* motors[3] = { new Motor(0xE1, &EVqueue), new Motor(0xE2, &EVqueue), new Motor(0xE3, &EVqueue) };
-    phi(0,0) > 0 ? motors[MOTOR_1]->Go(1, phi(0,0), 200/*v(0,0)/DPT*/) : motors[MOTOR_1]->Go(0, -phi(0,0), 200/*v(0,0)/DPT*/) ;
-    phi(1,0) > 0 ? motors[MOTOR_2]->Go(1, phi(1,0), 200/*v(1,0)/DPT*/) : motors[MOTOR_2]->Go(0, -phi(1,0), 200/*v(1,0)/DPT*/) ;
-    phi(2,0) > 0 ? motors[MOTOR_3]->Go(1, phi(2,0), 200/*v(2,0)/DPT*/) : motors[MOTOR_3]->Go(0, -phi(2,0), 200/*v(2,0)/DPT*/) ;
-    
-    //motors[MOTOR_1]->Go(1,1,200);
-
-double z = 0.2;
     printMutex.lock();
-    for(int i = 0; i < 3; i++){
-        printf("%lf\n", phi(i,0));
-    }
 
+    //std::cout << *(robot->getMatrix()) << std::endl << *(robot->getVelocity()) << std::endl << *(robot->getPhi()) << std::endl;
+    //std::cout << *(robot->getPhi()) << std::endl;
     //printf("")
     printMutex.unlock();
    // motors[MOTOR_2]
