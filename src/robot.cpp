@@ -4,7 +4,7 @@
 template <>
 Robot<tMotors>::Robot(EventQueue* EVqueue) : m_EVqueue(EVqueue)
 {
-    if(tMotors > maxWheels)
+    if(tMotors > maxMotors)
     {
         return;
     }

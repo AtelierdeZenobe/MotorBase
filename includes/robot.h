@@ -30,7 +30,7 @@ class Robot
             Motor7 = 6, Motor8 = 7, Motor9 = 8
         };
 
-        const uint8_t maxWheels = 9;
+        const uint8_t maxMotors = 9;
 
         void setMotors(void);
         void setMatrix(float r, float b, float theta, float alpha_1, float alpha_2, float alpha_3); //3 motors
