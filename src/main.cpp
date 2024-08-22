@@ -32,17 +32,44 @@ int main()
 // Kinematics (p29) : https://pure.tue.nl/ws/portalfiles/portal/4274124/612987.pdf
 
     const uint8_t motors = 3; //MAX 9
-    auto robot = new Robot<motors>(&EVqueue);
-    robot->setMotors();
-    robot->setMatrix(116.0f, 30.0f, 60.0f, 0.0f, 120.0f, 240.0f);
-    robot->setVelocity(100.0f, 0.0f, 0.0f)->findPhi();
+    auto robot = new Robot(&EVqueue, motors);
+    robot->Initialize(116.0f, 30.0f, 60.0f);
+
+    robot->Calibrate();
+
+    int dest_x = 70;
+    int dest_y = 25;
+    int v_x = 3;
+    int v_y = 4;
+    int omega = 150;
+
+    robot->Move(dest_x, dest_y, v_x, v_y, omega); //when velocity was modified
+    robot->Move(dest_x, dest_y); //with same velocity
+    //robot->Move(dest_x, dest_y, t); //
+
+    auto p = robot->Pos()->x;
+
+
+
+    ///////////
+    //FINAL
+    ///////////
+    /*
+    auto robot = new Robot(...);
+    robot->Initialize();
+    Robot->WhereAmI() | robot->Pos(); 
+    robot->Move(x, y, theta) | robot->Move(rho, theta);
+    */
+
+
+//std::cout << phix->first((0,0)) << std::endl;
 
 
     //std::cout << *(robot->getPhi()) << std::endl;
 
     //auto phi = robot->setVelocity(100.0f, 0.0f, 0.0f)->getPhi();
 
-    std::cout << robot->absPhi(2) << std::endl;
+    //std::cout << robot->phi(2) << std::endl;
 
     //robot->getMotor(Robot<motors>::Motors::Motor3)
         //->Go(static_cast<uint8_t>(Robot<motors>::Direction::CounterClockWise),robot->absPhi(2),200);

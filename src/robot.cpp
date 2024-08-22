@@ -1,64 +1,92 @@
 #include "robot.h"
 #include <cstdint>
 
-template <>
-Robot<tMotors>::Robot(EventQueue* EVqueue) : m_EVqueue(EVqueue)
+Robot::Robot(EventQueue* EVqueue, uint8_t motor, uint8_t firstMotorAddress) 
+    : m_EVqueue(EVqueue), m_motor(motor), m_firstMotorAddress(firstMotorAddress)
 {
-    if(tMotors > maxMotors)
+    if(m_motor > Robot::MaxMotors)
     {
-        return;
+        return; //Legit? Exception? Who cares?
     }
 
+    //Creates all kinematics matrixes needed to move on
     m_velocity = new Matrix(3, 1);
-    m_matrix = new Matrix(tMotors, 3);
-    m_phi = new Matrix(tMotors, 1);
+    m_matrix = new Matrix(m_motor, 3);
+    m_phi = new Matrix(m_motor, 1);
+
+    // Creates all motors with a specific automatically given address
+    initMotors();
 }
 
-template <>
-void Robot<tMotors>::setMotors()
+void Robot::Initialize(float r, float b, float theta, int pos_x, int pos_y, float alpha_1, float alpha_2, float alpha_3)
 {
-    uint8_t address = m_firstAddress;
+    initPos(pos_x, pos_y);
+    initMatrix(r, b, theta, alpha_1, alpha_2, alpha_3);
+}
 
-    for(uint8_t i = 0; i < tMotors; i++)
+void Robot::initMotors(void)
+{
+    uint8_t address = m_firstMotorAddress;
+
+    for(uint8_t i = 0; i < m_motor; i++)
     {
         m_motors[i] = new Motor(address + i, m_EVqueue);
     }
 }
 
-template <>
-Motor* Robot<tMotors>::getMotor(Robot<tMotors>::Motors motor)
-{
-    if(static_cast<uint8_t>(motor) >= tMotors)
-    {
-        return nullptr;
-    }
-
-    return m_motors[static_cast<uint8_t>(motor)];
-}
-
-template <>
-void Robot<tMotors>::setMatrix(float r, float b, float theta, float alpha_1, float alpha_2, float alpha_3)
+void Robot::initMatrix(float r, float b, float theta, float alpha_1, float alpha_2, float alpha_3)
 {
     if(r <= 0 || b <= 0)
     {
         return;
     }
 
-    (*m_matrix)(0,0) = -sin(m_DEG2RAD * (theta + alpha_1));
-    (*m_matrix)(0,1) = cos(m_DEG2RAD * (theta + alpha_1));
+    (*m_matrix)(0,0) = -sin(Robot::DegToRad * (theta + alpha_1));
+    (*m_matrix)(0,1) = cos(Robot::DegToRad * (theta + alpha_1));
     (*m_matrix)(0,2) = r;
-    (*m_matrix)(1,0) = -sin(m_DEG2RAD * (theta + alpha_2));
-    (*m_matrix)(1,1) = cos(m_DEG2RAD * (theta + alpha_2));
+    (*m_matrix)(1,0) = -sin(Robot::DegToRad * (theta + alpha_2));
+    (*m_matrix)(1,1) = cos(Robot::DegToRad * (theta + alpha_2));
     (*m_matrix)(1,2) = r;
-    (*m_matrix)(2,0) = -sin(m_DEG2RAD * (theta + alpha_3));
-    (*m_matrix)(2,1) = cos(m_DEG2RAD * (theta + alpha_3));
+    (*m_matrix)(2,0) = -sin(Robot::DegToRad * (theta + alpha_3));
+    (*m_matrix)(2,1) = cos(Robot::DegToRad * (theta + alpha_3));
     (*m_matrix)(2,2) = r;
 
     (*m_matrix) = (1.0f / b) * (*m_matrix);
 }
 
-template <>
-Robot<tMotors>* Robot<tMotors>::setVelocity(float v_x, float v_y, float omega)
+void Robot::initPos(int pos_x, int pos_y)
+{
+    m_currentPos->x = pos_x;
+    m_currentPos->y = pos_y;
+}
+
+struct Robot::Pos* Robot::Pos(void)
+{
+    return m_currentPos;
+}
+
+bool Robot::Calibrate(void)
+{
+    for(uint8_t i = 0; i < m_motor; i++)
+    {
+        if(m_motors[i]->Calibrate() == false)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+
+//----------------------------
+
+
+
+
+
+Robot* Robot::setVelocity(float v_x, float v_y, float omega)
 {
     (*m_velocity)(0,0) = v_x;
     (*m_velocity)(1,0) = v_y;
@@ -67,27 +95,26 @@ Robot<tMotors>* Robot<tMotors>::setVelocity(float v_x, float v_y, float omega)
     return this;
 }
 
-template <>
-Matrix* Robot<tMotors>::findPhi(void)
+Matrix* Robot::findPhi(void)
 {
     *m_phi = (*m_matrix) * (*m_velocity);
 
     return m_phi;
 }
 
-template <>
-Robot<tMotors>::Direction Robot<tMotors>::signPhi(int row)
+uint8_t Robot::signPhi(int row)
 {
+    auto direction = static_cast<uint8_t>(Robot::Direction::ClockWise);
+
     if((*m_phi)(row, 0) > 0)
     {
-        return Robot<tMotors>::Direction::CounterClockWise;
+        direction = static_cast<uint8_t>(Robot::Direction::CounterClockWise);
     }
     
-    return Robot<tMotors>::Direction::ClockWise;
+    return direction;
 }
 
-template <>
-uint8_t Robot<tMotors>::absPhi(int row)
+unsigned int Robot::absPhi(int row)
 {
     float phi = (*m_phi)(row, 0);
     if(phi < 0)
@@ -95,27 +122,26 @@ uint8_t Robot<tMotors>::absPhi(int row)
         phi = -phi;
     }
 
+   return static_cast<unsigned int>(phi);
+}
 
-    // DOES NOT WORK YET
-    //std:: cout << phi << std::endl;
-
-    //CONVERT FLOAT TO UINT8_T
-    //uint8_t* pPhi = reinterpret_cast<uint8_t*>(&phi);
-
-    //std::cout << "hello : " << pPhi[0] << std::endl;
-
-    //return *pPhi;
-
-   // return static_cast<uint8_t>(phi)';
-   return 1;
-
+Matrix* Robot::getPhi(void)
+{
+    return m_phi;
 }
 
 
-template <>
-Matrix* Robot<tMotors>::getPhi(void)
+bool Robot::Move(int dest_x, int dest_y, int v_x, int v_y, int omega)
 {
-    return m_phi;
+    setVelocity(v_x, v_y, omega);
+    findPhi();
+
+    for(uint8_t i = 0; i < m_motor; i++)
+    {
+        //m_motors[i]->Go(signPhi(i),absPhi(i),..);
+    }
+
+    return true;
 }
 
 /*
@@ -130,20 +156,4 @@ Matrix* Robot::getVelocity(void)
     return m_velocity;
 }
 
-void Robot::Move(float rho, float theta)
-{
-    //Move(rho * cos(theta), rho * sin(theta), ??)
-}
-
-void Robot::Move(float x, float y, float omega)
-{
-    //this->setVelocity(x, y, omega);
-}
-
-
-
-void Robot::Pos()
-{
-
-}
 */
