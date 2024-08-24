@@ -9,13 +9,6 @@
 //TODO: Find why we can't print to the console
 // For now: -> Switch USB
 
-#define MSTEP 2
-#define TPR 200 * MSTEP
-#define PI 3.141592
-#define DPR PI * 2 * B
-#define DPT DPR / TPR
-
-
 
 
 int main()
@@ -33,22 +26,22 @@ int main()
 
     const uint8_t motors = 3; //MAX 9
     auto robot = new Robot(&EVqueue, motors);
-    robot->Initialize(116.0f, 30.0f, 60.0f);
+    robot->Initialize(120.0f, 30.0f, 60.0f);
 
-    robot->Calibrate();
+    //robot->Calibrate();
 
-    int dest_x = 70;
-    int dest_y = 25;
-    int v_x = 3;
-    int v_y = 4;
-    int omega = 150;
+    int dest_x = 0;
+    int dest_y = 0;
+    int v_x = 100;
+    int v_y = 100;
+    double omega = 0;
+
 
     robot->Move(dest_x, dest_y, v_x, v_y, omega); //when velocity was modified
-    robot->Move(dest_x, dest_y); //with same velocity
+    //robot->Move(dest_x, dest_y); //with same velocity
     //robot->Move(dest_x, dest_y, t); //
 
-    auto p = robot->Pos()->x;
-
+    
 
 
     ///////////
@@ -62,61 +55,13 @@ int main()
     */
 
 
-//std::cout << phix->first((0,0)) << std::endl;
-
-
-    //std::cout << *(robot->getPhi()) << std::endl;
-
-    //auto phi = robot->setVelocity(100.0f, 0.0f, 0.0f)->getPhi();
-
-    //std::cout << robot->phi(2) << std::endl;
-
-    //robot->getMotor(Robot<motors>::Motors::Motor3)
-        //->Go(static_cast<uint8_t>(Robot<motors>::Direction::CounterClockWise),robot->absPhi(2),200);
-    
     
 
 
-
-    /*Motor* motors[3] = { new Motor(0xE1, &EVqueue), new Motor(0xE2, &EVqueue), new Motor(0xE3, &EVqueue) };
-
-    robot->setMotor(new Motor(0xE1, &EVqueue));
-    robot->setMotor(new Motor(0xE2, &EVqueue));
-    robot->setMotor(new Motor(0xE3, &EVqueue));*/
-    
-
-    //(*phi)(0,0) > 0 ? motors[MOTOR_1]->Go(0, (*phi)(0,0), 200/*v(0,0)/DPT*/) : motors[MOTOR_1]->Go(1, -(*phi)(0,0), 200/*v(0,0)/DPT*/) ;
-    //(*phi)(1,0) > 0 ? motors[MOTOR_2]->Go(0, (*phi)(1,0), 200/*v(1,0)/DPT*/) : motors[MOTOR_2]->Go(1, -(*phi)(1,0), 200/*v(1,0)/DPT*/) ;
-    //(*phi)(2,0) > 0 ? motors[MOTOR_3]->Go(0, (*phi)(2,0), 200/*v(2,0)/DPT*/) : motors[MOTOR_3]->Go(1, -(*phi)(2,0), 200/*v(2,0)/DPT*/) ;
-    
-    //motors[MOTOR_1]->Go(static_cast<uint8_t>(Robot<wheels>::Direction::Clockwise),1,200);
-    //motors[MOTOR_2]->Go(1,1,200);
-    //motors[MOTOR_3]->Go(1,1,200);
-
-    //robot->Move(100.0f, 0.0f, 0.0f); //Moves 100 along x-axis 
+    //robot()->Move(100.0f, 0.0f, 0.0f); //Moves 100 along x-axis 
     //robot->Move(0.0f, 0.0f, 100.0f); //Turns 100
 
-    
 
-    printMutex.lock();
-
-    //std::cout << *(robot->getMatrix()) << std::endl << *(robot->getVelocity()) << std::endl << *(robot->getPhi()) << std::endl;
-    //std::cout << *(robot->getPhi()) << std::endl;
-    //printf("")
-    printMutex.unlock();
-   // motors[MOTOR_2]
-    //motors[MOTOR_3]
-    
-
-    /*for(auto i = 0; i < 3; i++)
-    {
-        motors[i]->Go(1, 1, 200*m(0,i));
-    }*/
-    //motors[MOTOR_1]->Go(1,1,200);
-    //motors[MOTOR_2]->Go(0,1,200);
-    
-    //Motor motor(0xE2, &EVqueue);
-    //motor.Go(1, 1, 200);
     
     /* Works
     auto lambda = [&motor]() {

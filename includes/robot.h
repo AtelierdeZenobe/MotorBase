@@ -10,9 +10,16 @@
 #include "matrix-master/dist/matrix.h"
 #include "motor.h"
 
+// MaxMotors : maximum number of motors which can be used simultaneoulsy
+static const uint8_t MaxMotors = 3;
+
+// DegToRad : constant used to convert angles from degrees to radians
+static constexpr float DegToRad = 3.141592f / 180.0f;
+
 class Robot 
 {
     public :
+
         /*  EVqueue : , 
          *  motor : number of motors used,
          *  firstMotorAddress : address of the first motor while next ones are expected to be resulting from an incrementation
@@ -21,11 +28,6 @@ class Robot
         Robot() = delete;
         ~Robot();
 
-        // MaxMotors : maximum number of motors which can be used simultaneoulsy
-        static const uint8_t MaxMotors = 3;
-
-        // DegToRad : constant used to convert angles from degrees to radians
-        static constexpr float DegToRad = 3.141592f / 180.0f;
 
         struct Pos {
             int x;
@@ -37,7 +39,7 @@ class Robot
 
         /* Initializes main characteristics of the robot,
          * r : distance between the center of the motorbase and the center of the omniwheel,
-         * b : diameter of the omniwheels used,
+         * b : radius of the omniwheels used,
          * theta : angle in degrees between the coordinate robot axes and the first omniwheel,
          * pos_x : current x-position of the robot,
          * pos_y : current y-position of the robot,
@@ -46,7 +48,7 @@ class Robot
          * alpha_3 : angle between the coordinate wheel axes and the third wheel,
          */
         void Initialize(float r, float b, float theta, int pos_x = 0, int pos_y = 0, float alpha_1 = 0.0f, float alpha_2 = 120.0f, float alpha_3 = 240.0f);
-      
+  
         bool Calibrate(void);
 
         /// -----------------------------
@@ -54,7 +56,7 @@ class Robot
         Robot* setVelocity(float v_x, float v_y, float omega);
         Matrix* findPhi(void);
         uint8_t signPhi(int row);
-        unsigned int absPhi(int row);
+        double absPhi(int row);
 
 
         Matrix* getPhi(void);
@@ -78,6 +80,8 @@ class Robot
         EventQueue* m_EVqueue;
         Motor* m_motors[MaxMotors];
         Motor* m_currentMotor;
+
+        // m_phi = m_matrix x m_velocity
         Matrix* m_matrix;
         Matrix* m_velocity;
         Matrix* m_phi;
