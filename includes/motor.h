@@ -9,10 +9,6 @@
 #include <queue>
 #include <functional>
 
-#define MOTOR_1 0
-#define MOTOR_2 1
-#define MOTOR_3 2
-
 /**
 * @brief: Represents a single motor.
 * 
@@ -24,6 +20,8 @@ class Motor
     public:
     Motor(uint8_t address, EventQueue* evQueue);
     ~Motor();
+    
+    void Go(int8_t dirspeed, uint32_t nbSteps);
     void Go(uint8_t direction, uint8_t speed, uint32_t nbSteps);
     bool Calibrate();
     bool SetZero();

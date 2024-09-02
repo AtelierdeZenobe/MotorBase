@@ -1,194 +1,114 @@
 #include "robot.h"
-#include <cmath>
-#include <cstdint>
-#include <ostream>
 
-#define MSTEP 1
-#define TPR 200 * MSTEP
-#define PI 3.141592
-#define DPR PI * 2 * 30
-#define DPT DPR / TPR
-
-Robot::Robot(EventQueue* EVqueue, uint8_t motor, uint8_t firstMotorAddress) 
-    : m_EVqueue(EVqueue), m_motor(motor), m_firstMotorAddress(firstMotorAddress)
+Robot::Robot(EventQueue* EVqueue) : m_EVqueue(EVqueue)
 {
-    if(m_motor > MaxMotors)
+
+}
+
+Robot::~Robot()
+{
+    for(int i = 0; i < N_MOTOR; i++)
     {
-        return; //Legit? Exception? Who cares?
+        delete m_motors[i]; //delete[] ?
     }
 
-    //Creates all kinematics matrixes needed to move on
-    m_velocity = new Matrix(3, 1);
-    m_matrix = new Matrix(m_motor, 3);
-    m_phi = new Matrix(m_motor, 1);
-
-    // Creates all motors with a specific automatically given address
-    initMotors();
+    delete m_wheelAngularSpeedVector;
+    delete m_inverseJacobianKinematicsMatrix;
+    delete m_wantedVelocityVector;
 }
 
-void Robot::Initialize(float r, float b, float theta, int pos_x, int pos_y, float alpha_1, float alpha_2, float alpha_3)
+
+bool Robot::InitializeMotorbase()
 {
-    //initPos(pos_x, pos_y);
-    initMatrix(r, b, theta, alpha_1, alpha_2, alpha_3);
-
-    //m_motors[1]->Go(1,1,200);
-}
-
-void Robot::initMotors(void)
-{
-    uint8_t address = m_firstMotorAddress;
-
-    for(uint8_t i = 0; i < m_motor; i++)
+// CHECK VALUES
+    if(ROBOT_RADIUS <= 0 || WHEEL_RADIUS <= 0 || X_AXIS_ANGLE_MOTORS.size() != N_MOTOR || ADDRESS_MOTORS.size() != N_MOTOR)
     {
-        m_motors[i] = new Motor(address + i, m_EVqueue);
-    }
-}
-
-void Robot::initMatrix(float r, float b, float theta, float alpha_1, float alpha_2, float alpha_3)
-{
-    if(r <= 0 || b <= 0)
-    {
-        return;
+        return false;
     }
 
-    (*m_matrix)(0,0) = -sin(DegToRad * (theta + alpha_1));
-    (*m_matrix)(0,1) = cos(DegToRad * (theta + alpha_1));
-    (*m_matrix)(0,2) = r;
-    (*m_matrix)(1,0) = -sin(DegToRad * (theta + alpha_2));
-    (*m_matrix)(1,1) = cos(DegToRad * (theta + alpha_2));
-    (*m_matrix)(1,2) = r;
-    (*m_matrix)(2,0) = -sin(DegToRad * (theta + alpha_3));
-    (*m_matrix)(2,1) = cos(DegToRad * (theta + alpha_3));
-    (*m_matrix)(2,2) = r;
-
-
-    (*m_matrix) = (1.0f / b) * (*m_matrix);
-}
-
-void Robot::initPos(int pos_x, int pos_y)
-{
-    //m_currentPos->x = pos_x;
-    //m_currentPos->y = pos_y;
-}
-
-struct Robot::Pos* Robot::Pos(void)
-{
-    return m_currentPos;
-}
-
-bool Robot::Calibrate(void)
-{
-    /*for(uint8_t i = 0; i < m_motor; i++)
+// INIT MOTORS
+    for(int i = 0; i < N_MOTOR; i++)
     {
-        if(m_motors[i]->Calibrate() == false)
+        m_motors[i] = new Motor(ADDRESS_MOTORS[i], m_EVqueue);
+
+        if(m_motors[i] == nullptr)
         {
             return false;
         }
-    }*/
+    }
+
+// INIT KINEMATICS - MATRIXES
+    m_wheelAngularSpeedVector = new Matrix(N_MOTOR, 1);
+    m_inverseJacobianKinematicsMatrix = new Matrix(N_MOTOR, 3);
+    m_wantedVelocityVector = new Matrix(3, 1);
+
+    if(m_wheelAngularSpeedVector == nullptr || m_inverseJacobianKinematicsMatrix == nullptr || m_wantedVelocityVector == nullptr)
+    {
+        return false;
+    }
+
+// COMPUTE KINEMATICS - INVERSE JACOBIAN MATRIX 
+    for(int i = 0; i < N_MOTOR; i++)
+    {
+        (*m_inverseJacobianKinematicsMatrix)(i,0) = -sin(DEG_TO_RAD * X_AXIS_ANGLE_MOTORS[i]);
+        (*m_inverseJacobianKinematicsMatrix)(i,1) = cos(DEG_TO_RAD * X_AXIS_ANGLE_MOTORS[i]);
+        (*m_inverseJacobianKinematicsMatrix)(i,2) = ROBOT_RADIUS;   
+    }
+
+    (*m_inverseJacobianKinematicsMatrix) *= (1.0 / WHEEL_RADIUS);
 
     return true;
 }
 
-
-
-//----------------------------
-
-
-
-
-
-Robot* Robot::setVelocity(float v_x, float v_y, float omega)
+bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int& wanted_rotation, 
+    int wanted_speed, const int& wanted_mstep)
 {
-    (*m_velocity)(0,0) = v_x;
-    (*m_velocity)(1,0) = v_y;
-    (*m_velocity)(2,0) = omega;
-
-    return this;
-}
-
-Matrix* Robot::findPhi(void)
-{
-    *m_phi = (*m_matrix) * (*m_velocity);
-
-    return m_phi;
-}
-
-uint8_t Robot::signPhi(int row)
-{
-    auto direction = static_cast<uint8_t>(Robot::Direction::ClockWise);
-
-    if((*m_phi)(row, 0) > 0)
+//CHECK VALUES
+    if(wanted_speed < RPM_MINIMUM)
     {
-        direction = static_cast<uint8_t>(Robot::Direction::CounterClockWise);
+        wanted_speed = RPM_MINIMUM;
     }
-    
-    return direction;
-}
-
-double Robot::absPhi(int row)
-{
-    double phi = (*m_phi)(row, 0);
-
-    if(phi < 0)
+    else if(wanted_speed > RPM_MAXIMUM)
     {
-        phi = -phi;
+        wanted_speed = RPM_MAXIMUM;
     }
 
-   return phi;
-}
+    //Check that wanted_mstep is in a correct range and that it is a power of 2 also
+    if(wanted_mstep < MSTEP_MINIMUM || wanted_mstep > MSTEP_MAXIMUM || (wanted_mstep & (wanted_mstep - 1)) != 0)
+    {
+        return false;
+    }
 
-Matrix* Robot::getPhi(void)
-{
-    return m_phi;
-}
+// INIT KINEMATICS - WANTED VELOCITY VECTOR
+    (*m_wantedVelocityVector)(0,0) = wanted_distance * cos(DEG_TO_RAD * wanted_angle);
+    (*m_wantedVelocityVector)(1,0) = wanted_distance * sin(DEG_TO_RAD * wanted_angle);
+    (*m_wantedVelocityVector)(2,0) = DEG_TO_RAD * wanted_rotation;
 
+// COMPUTE KINEMATICS
+    (*m_wheelAngularSpeedVector) = (*m_inverseJacobianKinematicsMatrix) * (*m_wantedVelocityVector);
 
-bool Robot::Move(int dest_x, int dest_y, int v_x, int v_y, int omega)
-{
-    setVelocity(v_x, v_y, omega);
-    findPhi();
-    
-    auto k = 0.25;
-    auto normPhi = k * std::sqrt((absPhi(0) * absPhi(0) + absPhi(1) * absPhi(1) + absPhi(2) * absPhi(2)));
+    double steps_factor = wanted_mstep * TICS_PER_ROTATION / (2 * PI);
+    double speed_factor = wanted_mstep * wanted_speed * TICS_PER_ROTATION * WHEEL_RADIUS * 1.0 
+        / (SPEED_TO_RPM_FACTOR * SPEED_CORRECTION_FACTOR * Matrix::normVector(*m_wheelAngularSpeedVector));
 
-     for(auto i = 0; i < m_motor; i++)
-     {
-         //m_motors[i]->Go(signPhi(i), static_cast<int>(absPhi(i))
-     }
-
-    auto mstep = 32;
-    auto absPhiY =  0.25 * std::sqrt((absPhi(0) * absPhi(0) + absPhi(1) * absPhi(1) + absPhi(2) * absPhi(2)));
-
-    m_motors[0]->Go(signPhi(0),static_cast<int>(absPhi(0) * mstep * 200.0 * 30.0  / 30000.0 / absPhiY), static_cast<int>(mstep * absPhi(0)*200/2.0f/3.141592f));;
-    m_motors[1]->Go(signPhi(1),static_cast<int>(absPhi(1) * mstep * 200.0 * 30.0 /  30000.0 / absPhiY), static_cast<int>(mstep * absPhi(1)*200/2.0f/3.141592f));;
-    m_motors[2]->Go(signPhi(2),static_cast<int>(absPhi(2) * mstep * 200.0 * 30.0/ 30000.0 / absPhiY), static_cast<int>(mstep * absPhi(2)*200/2.0f/3.141592f));;
-
-    std::cout << static_cast<int>(absPhi(0) * mstep * 200.0 * 30.0/ 30000.0 / absPhiY) << " ; " << 
-        static_cast<int>(absPhi(1) * mstep * 200.0 * 30.0/ 30000.0 / absPhiY) << " ; " <<
-        static_cast<int>(absPhi(2) * mstep * 200.0 * 30.0/ 30000.0 / absPhiY) << std::endl;
-
-
-
-    // Vrpm = (Speed × 30000)/(Mstep × 200)
-    // speed = vrpm * mstep * 200 / 30000
+// SEND DATA TO MOTORS
+    for(int i = 0; i < N_MOTOR; i++)
+    {
+        m_motors[i]->Go(static_cast<int>((*m_wheelAngularSpeedVector)(i,0) * speed_factor), 
+            static_cast<int>(std::abs((*m_wheelAngularSpeedVector)(i,0)) * steps_factor));
+    }
 
     return true;
 }
-
 /*
-
-Matrix* Robot::getMatrix(void)
+bool Robot::CalibrateMotors(void)
 {
-    return m_matrix;
-}
+    
+    for(int i = 0; i < N_MOTOR; i++)
+    {
+        m_motors[i]->Calibrate();
+    }
 
-Matrix* Robot::getVelocity(void)
-{
-    return m_velocity;
+    return true;
 }
-
 */
-
-// MOTOR SPEED
-// MATRIX MOVEMENT ?
-// ROBOT SPEED
