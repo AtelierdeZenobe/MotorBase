@@ -46,7 +46,7 @@ class Robot
         /**
          * @brief Recalibrate each motor to rectify any abnormal behaviour occuring
          */
-        bool CalibrateMotors(void);
+        //bool CalibrateMotors(void);
 
     private:   
         EventQueue* m_EVqueue;

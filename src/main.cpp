@@ -23,8 +23,8 @@ int main()
 
     auto robot = new Robot(&EVqueue);
     robot->InitializeMotorbase();
-    robot->CalibrateMotors();
-    robot->Move(200, 130, 180, 2.0, 32);
+    //robot->CalibrateMotors();
+    robot->Move(800, -60, 720, 1, 8);
 
 /*
     std::cout << *(robot->m_inverseJacobianKinematicsMatrix) << std::endl;

@@ -22,7 +22,7 @@ const double SPEED_CORRECTION_FACTOR = 0.25;
 
 const int RPM_MINIMUM = 0;
 const int RPM_MAXIMUM = 2000;
-const int MSTEP_MINIMUM = 2;
+const int MSTEP_MINIMUM = 1;
 const int MSTEP_MAXIMUM = 256;
 
 /**

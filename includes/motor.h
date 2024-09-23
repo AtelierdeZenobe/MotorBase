@@ -23,9 +23,9 @@ class Motor
     
     void Go(int8_t dirspeed, uint32_t nbSteps);
     void Go(uint8_t direction, uint8_t speed, uint32_t nbSteps);
-    bool Calibrate();
-    bool SetZero();
-    bool GoToZero();
+    //bool Calibrate();
+    //bool SetZero();
+    //bool GoToZero();
 
     private:
     EventQueue *m_evQueue;
