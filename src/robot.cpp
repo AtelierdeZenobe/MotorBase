@@ -1,5 +1,9 @@
 #include "robot.h"
 
+// Kinematics (p29) : https://pure.tue.nl/ws/portalfiles/portal/4274124/612987.pdf
+// Kinematics (more explanations) : https://www.internationaljournalssrg.org/IJEEE/2019/Volume6-Issue12/IJEEE-V6I12P101.pdf
+
+
 Robot::Robot(EventQueue* EVqueue) : m_EVqueue(EVqueue)
 {
 
@@ -114,6 +118,7 @@ bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int&
     return true;
 }
 
+
 void Robot::Move(void)
 {
     double a, b, c, d, e;
@@ -131,14 +136,4 @@ void Robot::Move(void)
 
 }
 
-/*
-bool Robot::CalibrateMotors(void)
-{  
-    for(int i = 0; i < N_MOTOR; i++)
-    {
-        m_motors[i]->Calibrate();
-    }
 
-    return true;
-}
-*/

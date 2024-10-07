@@ -136,12 +136,12 @@ void Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
 
     //return success;
 }
-/*
+
 bool Motor::Calibrate()
 {
-    Message * messageOut = new Message(m_address, CALIBRATE, std::vector<int8_t>());
+    std::vector<int8_t> data = {0x00};
+    Message * messageOut = new Message(m_address, CALIBRATE, data);
     Message messageIn;
     m_uartCOM->Send(messageOut, messageIn);
     return true;
 }
-*/

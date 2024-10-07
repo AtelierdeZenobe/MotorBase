@@ -52,7 +52,9 @@ class Robot
         /**
          * @brief Function used to recalibrate the motors when something is getting wrong with them
          */
-        //bool CalibrateMotors(void);
+
+
+
     private:   
         EventQueue* m_EVqueue;
         Motor* m_motors[N_MOTOR];
