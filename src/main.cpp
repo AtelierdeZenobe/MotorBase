@@ -4,9 +4,9 @@
  */
 
 #include "mbed.h"
-#include <cstdint> // For uint8_t
+#include <cstdint>
 #include <iostream>
-#include <cmath> // For trigonometric functions
+#include <cmath>
 #include <ostream>
 #include "motor.h"
 #include "robot.h"
@@ -24,7 +24,9 @@ int main()
     auto robot = new Robot(&EVqueue);
     robot->InitializeMotorbase();
     //robot->CalibrateMotors();
-    robot->Move(800, -60, 720, 1, 8);
+    //robot->Move(0, 0, 720, 1, 8);
+
+    robot->Move();
 
 /*
     std::cout << *(robot->m_inverseJacobianKinematicsMatrix) << std::endl;

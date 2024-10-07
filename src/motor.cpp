@@ -56,13 +56,13 @@ void Motor::Go(int8_t dirspeed, uint32_t nbSteps)
     if(success)
     {
 
-        std::cout << std::bitset<8>(dirspeed) << " -> ";
+        //std::cout << std::bitset<8>(dirspeed) << " -> ";
         if(dirspeed < 0)
         {
             dirspeed = -dirspeed;
             dirspeed |= 1 << 7;
         }
-        std::cout << std::bitset<8>(dirspeed) << std::endl;
+        //std::cout << std::bitset<8>(dirspeed) << std::endl;
 
         std::vector<int8_t> data;
         //data.push_back( (direction << 7) | (speed &= 0x7F)); // 1st bit is direction, others are speed

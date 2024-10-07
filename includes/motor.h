@@ -1,7 +1,4 @@
-
-
-#ifndef __MOTOR_H__
-#define __MOTOR_H__
+#pragma once
 
 #include <cstdint> // For uint8_t
 #include "mbed.h"
@@ -32,5 +29,3 @@ class Motor
     uint8_t m_address = 0xE0;
     UartCOM * m_uartCOM;// = UartCOM(PC_10, PC_11); // Each motor will have its own uart com.
 };
-
-#endif

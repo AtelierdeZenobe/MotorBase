@@ -17,12 +17,12 @@ Robot::~Robot()
     delete m_wantedVelocityVector;
 }
 
-
-bool Robot::InitializeMotorbase()
+bool Robot::InitializeMotorbase(void)
 {
 // CHECK VALUES
-    if(ROBOT_RADIUS <= 0 || WHEEL_RADIUS <= 0 || X_AXIS_ANGLE_MOTORS.size() != N_MOTOR || ADDRESS_MOTORS.size() != N_MOTOR)
+    if(ROBOT_RADIUS <= 0 || WHEEL_RADIUS <= 0 || N_MOTOR != 3 || X_AXIS_ANGLE_MOTORS.size() != N_MOTOR || ADDRESS_MOTORS.size() != N_MOTOR)
     {
+        std::cout << "Error: Initialization check values failed" << std::endl;
         return false;
     }
 
@@ -33,6 +33,7 @@ bool Robot::InitializeMotorbase()
 
         if(m_motors[i] == nullptr)
         {
+            std::cout << "Error: Unable to create the motor" << std::endl;
             return false;
         }
     }
@@ -44,6 +45,7 @@ bool Robot::InitializeMotorbase()
 
     if(m_wheelAngularSpeedVector == nullptr || m_inverseJacobianKinematicsMatrix == nullptr || m_wantedVelocityVector == nullptr)
     {
+        std::cout << "Error: Unable to create kinematics matrixes" << std::endl;
         return false;
     }
 
@@ -52,7 +54,7 @@ bool Robot::InitializeMotorbase()
     {
         (*m_inverseJacobianKinematicsMatrix)(i,0) = -sin(DEG_TO_RAD * X_AXIS_ANGLE_MOTORS[i]);
         (*m_inverseJacobianKinematicsMatrix)(i,1) = cos(DEG_TO_RAD * X_AXIS_ANGLE_MOTORS[i]);
-        (*m_inverseJacobianKinematicsMatrix)(i,2) = ROBOT_RADIUS;   
+        (*m_inverseJacobianKinematicsMatrix)(i,2) = ROBOT_RADIUS;
     }
 
     (*m_inverseJacobianKinematicsMatrix) *= (1.0 / WHEEL_RADIUS);
@@ -61,21 +63,25 @@ bool Robot::InitializeMotorbase()
 }
 
 bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int& wanted_rotation, 
-    int wanted_speed, const int& wanted_mstep)
+    const int& wanted_speed, const int& wanted_mstep)
 {
 //CHECK VALUES
-    if(wanted_speed < RPM_MINIMUM)
+    if(N_MOTOR != 3) //N_MOTOR
     {
-        wanted_speed = RPM_MINIMUM;
+        std::cout << "Error: Invalid N_MOTOR value found" << std::endl;
+        return false;
     }
-    else if(wanted_speed > RPM_MAXIMUM)
+
+    if(wanted_speed < RPM_MINIMUM || wanted_speed > RPM_MAXIMUM)
     {
-        wanted_speed = RPM_MAXIMUM;
+        std::cout << "Error: wanted_speed is not in the range" << std::endl;
+        return false;
     }
 
     //Check that wanted_mstep is in a correct range and that it is a power of 2 also
     if(wanted_mstep < MSTEP_MINIMUM || wanted_mstep > MSTEP_MAXIMUM || (wanted_mstep & (wanted_mstep - 1)) != 0)
     {
+        std::cout << "Error: wanted_mstep is not in the range" << std::endl;
         return false;
     }
 
@@ -87,9 +93,16 @@ bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int&
 // COMPUTE KINEMATICS
     (*m_wheelAngularSpeedVector) = (*m_inverseJacobianKinematicsMatrix) * (*m_wantedVelocityVector);
 
+    double normWheelAngularSpeedVector;
+    if(!Matrix::normVector(*m_wheelAngularSpeedVector, &normWheelAngularSpeedVector))
+    {
+        std::cout << "Error : Matrix incorrectly used as vector" << std::endl;
+        return false;
+    }
+
     double steps_factor = wanted_mstep * TICS_PER_ROTATION / (2 * PI);
     double speed_factor = wanted_mstep * wanted_speed * TICS_PER_ROTATION * WHEEL_RADIUS * 1.0 
-        / (SPEED_TO_RPM_FACTOR * SPEED_CORRECTION_FACTOR * Matrix::normVector(*m_wheelAngularSpeedVector));
+        / (SPEED_TO_RPM_FACTOR * SPEED_CORRECTION_FACTOR * normWheelAngularSpeedVector);
 
 // SEND DATA TO MOTORS
     for(int i = 0; i < N_MOTOR; i++)
@@ -100,10 +113,27 @@ bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int&
 
     return true;
 }
+
+void Robot::Move(void)
+{
+    double a, b, c, d, e;
+
+    std::cout << "wanted_distance;wanted_angle;wanted_rotation;wanted_speed;wanted_mstep" << std::endl;
+    std::cin >> a;
+    std::cin >> b;
+    std::cin >> c;
+    std::cin >> d;
+    std::cin >> e;
+
+    Move(a, b, c, d, e);
+
+    Move();
+
+}
+
 /*
 bool Robot::CalibrateMotors(void)
-{
-    
+{  
     for(int i = 0; i < N_MOTOR; i++)
     {
         m_motors[i]->Calibrate();

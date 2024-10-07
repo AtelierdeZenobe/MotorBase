@@ -49,8 +49,14 @@ void Matrix::allocSpace(void)
     }
 }
 
-double Matrix::normVector(const Matrix& vector)
+bool Matrix::normVector(const Matrix& vector, double* normVector)
 {
+    if(vector.m_col != COL_VECTOR)
+    {
+        std::cout << "Error : Number of columns must be equal to 1" << std::endl;
+        return false;
+    }
+
     double result = 0.0;
 
     for(auto i = 0; i < vector.m_row; i++)
@@ -58,7 +64,9 @@ double Matrix::normVector(const Matrix& vector)
         result += (vector)(i,0) * (vector)(i, 0);
     }
 
-    return std::sqrt(result);
+    *normVector = std::sqrt(result);
+
+    return true;
 }
 
 Matrix& Matrix::operator=(const Matrix& matrix)
@@ -79,7 +87,7 @@ Matrix& Matrix::operator=(const Matrix& matrix)
     return *this;
 }
 
-Matrix& Matrix::operator*=(double factor)
+Matrix& Matrix::operator*=(const double factor)
 {
     for(auto i = 0; i < m_row; i++)
     {
@@ -119,7 +127,7 @@ Matrix operator*(const Matrix& matrix_1, const Matrix& matrix_2)
     return (result *= matrix_2);
 }
 
-Matrix operator*(double factor, const Matrix& matrix)
+Matrix operator*(const double factor, const Matrix& matrix)
 {
     Matrix result(matrix);
 
@@ -130,7 +138,7 @@ Matrix operator-(const Matrix& matrix)
 {
     Matrix result(matrix);
 
-    return (result = (-1) * matrix);
+    return (result = -1 * matrix);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const Matrix& matrix)
