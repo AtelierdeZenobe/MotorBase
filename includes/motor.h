@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint> // For uint8_t
 #include "mbed.h"
 #include "uartCOM.h"
@@ -15,10 +17,12 @@ class Motor
     public:
     Motor(uint8_t address, EventQueue* evQueue);
     ~Motor();
+    
+    void Go(int8_t dirspeed, uint32_t nbSteps);
     void Go(uint8_t direction, uint8_t speed, uint32_t nbSteps);
-    bool Calibrate();
-    bool SetZero();
-    bool GoToZero();
+    //bool Calibrate();
+    //bool SetZero();
+    //bool GoToZero();
 
     private:
     EventQueue *m_evQueue;
