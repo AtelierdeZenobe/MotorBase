@@ -116,16 +116,56 @@ bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int&
 
 void Robot::Move(void)
 {
-    double a, b, c, d, e;
+    double wanted_distance, wanted_angle, wanted_rotation, wanted_speed, wanted_mstep;
+    
+    bool result = false;
 
-    std::cout << "wanted_distance;wanted_angle;wanted_rotation;wanted_speed;wanted_mstep" << std::endl;
-    std::cin >> a;
-    std::cin >> b;
-    std::cin >> c;
-    std::cin >> d;
-    std::cin >> e;
+        std::cout << "Distance: ";
+        std::cin >> wanted_distance;
+        std::cout << wanted_distance << std::endl;
 
-    Move(a, b, c, d, e);
+        std::cout << "Angle: ";
+        std::cin >> wanted_angle;
+        std::cout << wanted_angle << std::endl;
+
+        std::cout << "Rotation: ";
+        std::cin >> wanted_rotation;
+        std::cout << wanted_rotation << std::endl;
+
+    while(!result)
+    {
+        std::cout << "Speed [ " << RPM_MINIMUM << " ; " << RPM_MAXIMUM << " ] : ";
+        std::cin >> wanted_speed;
+        std::cout << wanted_speed << std::endl;
+        if(RPM_MINIMUM < wanted_speed && wanted_speed < RPM_MAXIMUM)
+        {
+            result = true;
+        }
+        else
+        {
+            std::cout << "Incorrect speed" << std::endl;
+        }
+    }
+    
+    result = false;
+    while(!result)
+    {
+        std::cout << "MStep: [ " << MSTEP_MINIMUM << " ; " << MSTEP_MAXIMUM << " ] : ";
+        std::cin >> wanted_mstep;
+        std::cout << wanted_mstep << std::endl;
+        if(MSTEP_MINIMUM < wanted_mstep && wanted_mstep < MSTEP_MAXIMUM)
+        {
+            result = true;
+        }
+        else
+        {
+            std::cout << "Incorrect MStep" << std::endl;
+        }
+    }
+    std::cout << std::endl;
+
+
+    Move(wanted_distance, wanted_angle, wanted_rotation, wanted_speed, wanted_mstep);
 
     Move();
 
