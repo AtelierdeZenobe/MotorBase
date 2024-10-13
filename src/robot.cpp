@@ -120,17 +120,17 @@ void Robot::Move(void)
     
     bool result = false;
 
-        std::cout << "Distance: ";
-        std::cin >> wanted_distance;
-        std::cout << wanted_distance << std::endl;
+    std::cout << "Distance: ";
+    std::cin >> wanted_distance;
+    std::cout << wanted_distance << std::endl;
 
-        std::cout << "Angle: ";
-        std::cin >> wanted_angle;
-        std::cout << wanted_angle << std::endl;
+    std::cout << "Angle: ";
+    std::cin >> wanted_angle;
+    std::cout << wanted_angle << std::endl;
 
-        std::cout << "Rotation: ";
-        std::cin >> wanted_rotation;
-        std::cout << wanted_rotation << std::endl;
+    std::cout << "Rotation: ";
+    std::cin >> wanted_rotation;
+    std::cout << wanted_rotation << std::endl;
 
     while(!result)
     {
@@ -167,8 +167,7 @@ void Robot::Move(void)
 
     Move(wanted_distance, wanted_angle, wanted_rotation, wanted_speed, wanted_mstep);
 
-    Move();
-
+    Move(); // Callback for next movement
 }
 
 /*
