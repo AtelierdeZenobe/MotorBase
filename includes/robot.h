@@ -43,8 +43,9 @@ class Robot
          */
         bool Move(const int& wanted_distance, const int& wanted_angle, const int& wanted_rotation, 
             const int& wanted_speed, const int& wanted_mstep = 128);
+
         /**
-         * @brief Function used to move and rotate the robot in any way without given values
+         * @brief Move the robot using terminal inputs
          */
         void Move(void);
 

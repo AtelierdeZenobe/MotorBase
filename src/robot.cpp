@@ -1,4 +1,5 @@
 #include "robot.h"
+#include <istream>
 
 Robot::Robot(EventQueue* EVqueue) : m_EVqueue(EVqueue)
 {
@@ -116,19 +117,93 @@ bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int&
 
 void Robot::Move(void)
 {
-    double a, b, c, d, e;
+    double wanted_distance, wanted_angle, wanted_rotation, wanted_speed, wanted_mstep;
+    
+    bool result = false;
+    
+    result = false;
+    while(!result)
+    {
+        std::cout << "Distance (mm): ";
+        result = static_cast<bool>(std::cin >> wanted_distance);
+        std::cout << wanted_distance << std::endl;
+        if(!result)
+        {
+            std::cout << "Not a double. Retry." << std::endl;
+            std::cin.clear(); // Clear the error flag on cin
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the invalid input
+        }
+    }
+  
+    result = false;
+    while(!result)
+    {
+        std::cout << "Angle (°): ";
+        result = static_cast<bool>(std::cin >> wanted_angle);
+        std::cout << wanted_angle << std::endl;
+        if(!result)
+        {
+            std::cout << "Not a double. Retry." << std::endl;
+            std::cin.clear(); // Clear the error flag on cin
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the invalid input
+        }
+    }
 
-    std::cout << "wanted_distance;wanted_angle;wanted_rotation;wanted_speed;wanted_mstep" << std::endl;
-    std::cin >> a;
-    std::cin >> b;
-    std::cin >> c;
-    std::cin >> d;
-    std::cin >> e;
+    result = false;
+    while(!result)
+    {
+        std::cout << "Rotation (°): ";
+        result = static_cast<bool>(std::cin >> wanted_rotation);
+        std::cout << wanted_rotation << std::endl;
+        if(!result)
+        {
+            std::cout << "Not a double. Retry." << std::endl;
+            std::cin.clear(); // Clear the error flag on cin
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the invalid input
+        }
+    }
 
-    Move(a, b, c, d, e);
+    result = false;
+    while(!result)
+    {
+        std::cout << "Speed (mm/s) [ " << RPM_MINIMUM << " ; " << RPM_MAXIMUM << " ] : ";
+        std::cin >> wanted_speed;
+        std::cout << wanted_speed << std::endl;
+        if(RPM_MINIMUM < wanted_speed && wanted_speed < RPM_MAXIMUM)
+        {
+            result = true;
+        }
+        else
+        {
+            std::cout << "Incorrect speed" << std::endl;
+            std::cin.clear(); // Clear the error flag on cin
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the invalid input
+        }
+    }
+    
+    result = false;
+    while(!result)
+    {
+        std::cout << "MStep: [ " << MSTEP_MINIMUM << " ; " << MSTEP_MAXIMUM << " ] : ";
+        std::cin >> wanted_mstep;
+        std::cout << wanted_mstep << std::endl;
+        if(MSTEP_MINIMUM < wanted_mstep && wanted_mstep < MSTEP_MAXIMUM)
+        {
+            result = true;
+        }
+        else
+        {
+            std::cout << "Incorrect MStep" << std::endl;
+            std::cin.clear(); // Clear the error flag on cin
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the invalid input
+        }
+    }
+    std::cout << std::endl;
 
-    Move();
 
+    Move(wanted_distance, wanted_angle, wanted_rotation, wanted_speed, wanted_mstep);
+
+    Move(); // Callback for next movement
 }
 
 /*
