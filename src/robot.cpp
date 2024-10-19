@@ -167,9 +167,9 @@ void Robot::Move(void)
     while(!result)
     {
         std::cout << "Speed (mm/s) [ " << RPM_MINIMUM << " ; " << RPM_MAXIMUM << " ] : ";
-        std::cin >> wanted_speed;
+        result = static_cast<bool>(std::cin >> wanted_speed);
         std::cout << wanted_speed << std::endl;
-        if(RPM_MINIMUM < wanted_speed && wanted_speed < RPM_MAXIMUM)
+        if(result && RPM_MINIMUM < wanted_speed && wanted_speed < RPM_MAXIMUM)
         {
             result = true;
         }
@@ -178,6 +178,7 @@ void Robot::Move(void)
             std::cout << "Incorrect speed" << std::endl;
             std::cin.clear(); // Clear the error flag on cin
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the invalid input
+            result = false;
         }
     }
     
@@ -185,9 +186,9 @@ void Robot::Move(void)
     while(!result)
     {
         std::cout << "MStep: [ " << MSTEP_MINIMUM << " ; " << MSTEP_MAXIMUM << " ] : ";
-        std::cin >> wanted_mstep;
+        result = static_cast<bool>(std::cin >> wanted_mstep);
         std::cout << wanted_mstep << std::endl;
-        if(MSTEP_MINIMUM < wanted_mstep && wanted_mstep < MSTEP_MAXIMUM)
+        if(result && MSTEP_MINIMUM < wanted_mstep && wanted_mstep < MSTEP_MAXIMUM)
         {
             result = true;
         }
@@ -196,6 +197,7 @@ void Robot::Move(void)
             std::cout << "Incorrect MStep" << std::endl;
             std::cin.clear(); // Clear the error flag on cin
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the invalid input
+            result = false;
         }
     }
     std::cout << std::endl;
