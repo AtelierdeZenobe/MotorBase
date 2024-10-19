@@ -72,7 +72,7 @@ void Motor::Go(int8_t dirspeed, uint32_t nbSteps)
         data.push_back(static_cast<uint8_t>((nbSteps >> 8) & 0xFF));
         data.push_back(static_cast<uint8_t>(nbSteps & 0xFF));
         Message* messageOut = new Message(m_address, RUN_DIR_PULSES, data);
-        messageOut->display();
+        //messageOut->display();
         Message messageIn;
         
         // TODO: clarify
@@ -143,5 +143,54 @@ bool Motor::Calibrate()
     Message * messageOut = new Message(m_address, CALIBRATE, data);
     Message messageIn;
     m_uartCOM->Send(messageOut, messageIn);
+    messageOut->display();
     return true;
 }
+
+bool Motor::SetPID(uint16_t kp, uint16_t ki, uint16_t kd)
+{
+    std::vector<int8_t> data = {(int8_t)((kp >> 8) & 0xFF), (int8_t)(kp & 0xFF)};
+    Message * messageOut = new Message(m_address, SET_KP_POS, data);
+    Message messageIn;
+    m_uartCOM->Send(messageOut, messageIn);
+
+
+    data = {(int8_t)((ki >> 8) & 0xFF), (int8_t)(ki & 0xFF)};
+    messageOut = new Message(m_address, SET_KI_POS, data);
+    m_uartCOM->Send(messageOut, messageIn);
+
+
+    data = {(int8_t)((kd >> 8) & 0xFF), (int8_t)(kd & 0xFF)};
+    messageOut = new Message(m_address, SET_KD_POS, data);
+    m_uartCOM->Send(messageOut, messageIn);
+
+
+    return true;
+
+}
+
+
+bool Motor::SetACC(uint16_t ACC)
+{
+
+    std::vector<int8_t> data = {(int8_t)((ACC >> 8) & 0xFF), (int8_t)(ACC & 0xFF)};
+    Message * messageOut = new Message(m_address, SET_ACC, data);
+    Message messageIn;
+    m_uartCOM->Send(messageOut, messageIn);
+
+    return true;
+
+}
+
+bool Motor::SetMStep(uint8_t mStep)
+{
+
+    std::vector<int8_t> data = {(int8_t)mStep};
+    Message * messageOut = new Message(m_address, SET_SUBDIVISION, data);
+    Message messageIn;
+    m_uartCOM->Send(messageOut, messageIn);
+
+    return true;
+
+}
+

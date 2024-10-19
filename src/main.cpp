@@ -12,10 +12,6 @@
 #include "robot.h"
 #include "matrix.h"
 
-#include "message.h"
-#include "uartCOM.h"
-#include "functionCodes.h"
-
 int main()
 {
     EventQueue EVqueue;
@@ -23,20 +19,23 @@ int main()
     eventThread.start(callback(&EVqueue, &EventQueue::dispatch_forever));
 
     auto robot = new Robot(&EVqueue);
-   // robot->InitializeMotorbase();
+    robot->InitializeMotorbase();
     //robot->CalibrateMotors();
 
-    //robot->Move(0, 0, 720, 1, 8);
+    
+    //robot->SetACC(0x0100);
+    robot->Move(100, 0, 0, 1, 32);
+    
+    //robot->Move();
 
-    robot->Move();
-
-
-    std::vector<int8_t> data = {0x00};
+/*
+    std::vector<int8_t> data = {0x00,0x60};
     auto uartCOM = new UartCOM(PC_10, PC_11);
-    Message * messageOut = new Message(0xE1, CALIBRATE, data);
+    Message * messageOut = new Message(0xE1, SET_ACC, data);
     Message messageIn;
     uartCOM->Send(messageOut, messageIn);
 
+*/
 
 
     EVqueue.dispatch_forever();

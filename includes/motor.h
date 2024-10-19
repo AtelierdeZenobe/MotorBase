@@ -23,6 +23,9 @@ class Motor
     bool Calibrate();
     //bool SetZero();
     //bool GoToZero();
+    bool SetPID(uint16_t kp, uint16_t ki, uint16_t kd);
+    bool SetACC(uint16_t ACC);
+    bool SetMStep(uint8_t mStep);
 
     private:
     EventQueue *m_evQueue;

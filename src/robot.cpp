@@ -42,6 +42,10 @@ bool Robot::InitializeMotorbase(void)
         }
     }
 
+    //Set mStep
+    //SetMStep(MSTEP);
+
+
 // INIT KINEMATICS - MATRIXES
     m_wheelAngularSpeedVector = new Matrix(N_MOTOR, 1);
     m_inverseJacobianKinematicsMatrix = new Matrix(N_MOTOR, 3);
@@ -90,9 +94,9 @@ bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int&
     }
 
 // INIT KINEMATICS - WANTED VELOCITY VECTOR
-    (*m_wantedVelocityVector)(0,0) = wanted_distance * cos(DEG_TO_RAD * wanted_angle);
-    (*m_wantedVelocityVector)(1,0) = wanted_distance * sin(DEG_TO_RAD * wanted_angle);
-    (*m_wantedVelocityVector)(2,0) = DEG_TO_RAD * wanted_rotation;
+    (*m_wantedVelocityVector)(0,0) = wanted_distance * cos(DEG_TO_RAD * wanted_angle)*(int)MSTEP/wanted_mstep;
+    (*m_wantedVelocityVector)(1,0) = wanted_distance * sin(DEG_TO_RAD * wanted_angle)*(int)MSTEP/wanted_mstep;
+    (*m_wantedVelocityVector)(2,0) = DEG_TO_RAD * wanted_rotation*(int)MSTEP/wanted_mstep;
 
 // COMPUTE KINEMATICS
     (*m_wheelAngularSpeedVector) = (*m_inverseJacobianKinematicsMatrix) * (*m_wantedVelocityVector);
@@ -136,4 +140,37 @@ void Robot::Move(void)
 
 }
 
+bool Robot::SetPID(uint16_t kp, uint16_t ki, uint16_t kd)
+{
 
+
+    for(int i = 0; i < N_MOTOR; i++)
+    {
+        m_motors[i]->SetPID(kp,ki,kd);     //(Default Kp is 0x650, 0x1, 0x650).
+    }
+        return true;
+}
+
+bool Robot::SetACC(uint16_t ACC)
+{
+
+    for(int i = 0; i < N_MOTOR; i++)
+    {
+        m_motors[i]->SetACC(ACC);    //(Default ACC is 0x11e)
+
+    }
+
+    return true;
+}
+
+bool Robot::SetMStep(uint8_t mStep)
+{
+
+    for(int i = 0; i < N_MOTOR; i++)
+    {
+        m_motors[i]->SetMStep(mStep);    
+
+    }
+
+    return true;
+}

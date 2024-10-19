@@ -9,6 +9,8 @@
 #include "motor.h"
 #include "constants.h"
 
+//TODO TOREMOVE
+#include "functionCodes.h"
 /**
  * @brief Represents a 3-omniwheel robot
  */
@@ -47,6 +49,28 @@ class Robot
          * @brief Function used to move and rotate the robot in any way without given values
          */
         void Move(void);
+
+
+        /**
+        * @brief Set PID of all robot's motor
+        */
+            //(Default Kp is 0x650).
+            //(Default Ki is 1).
+            //(Default Kd is 0x650).
+        bool SetPID(uint16_t kp, uint16_t ki, uint16_t kd);
+
+
+        /**
+        * @brief Set ACC of all robot's motor
+        */
+        //(Default ACC is 0x11e)
+        bool SetACC(uint16_t ACC);
+
+        /**
+        * @brief Set mStep of all robot's motor
+        */
+        bool SetMStep(uint8_t mStep);
+
 
 
         /**
