@@ -14,19 +14,18 @@
 
 int main()
 {
+    std::cout << "Print from main" << std::endl;
+
     EventQueue EVqueue;
     Thread eventThread;
     eventThread.start(callback(&EVqueue, &EventQueue::dispatch_forever));
 
     auto robot = new Robot(&EVqueue);
     robot->InitializeMotorbase();
-    //robot->CalibrateMotors();
 
-    
     //robot->SetACC(0x0100);
-    robot->Move(100, 0, 0, 1, 32);
     
-    //robot->Move();
+    robot->Move(100, 0, 0, 1, 32);
 
 /*
     std::vector<int8_t> data = {0x00,0x60};
@@ -38,10 +37,6 @@ int main()
 */
 
 
-    EVqueue.dispatch_forever();
-
-
-
-    
+    EVqueue.dispatch_forever();    
 
 };

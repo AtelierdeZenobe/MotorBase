@@ -1,6 +1,7 @@
 #include"motor.h"
 #include <cstdint>
 #include<iostream>
+#include <memory>
 #include <vector>
 //#include "message.h"
 #include "functionCodes.h"
@@ -9,9 +10,7 @@
 Motor::Motor(uint8_t address, EventQueue* evQueue) : m_address(address), m_evQueue(evQueue)
 {
     auto it = UART_MAP.find(m_address);
-    printMutex.lock();
-    //printf("Initializing motor's uart.\n");
-    printMutex.unlock();
+
     if(it != UART_MAP.end())
     {
         auto pins = it->second;
@@ -22,13 +21,10 @@ Motor::Motor(uint8_t address, EventQueue* evQueue) : m_address(address), m_evQue
         // Should start looking for uart with a send receive logic
         // For now, UART 6
         printMutex.lock();
-        //printf("%02x| Could not find address in uart map.\n", m_address);
+        printf("%02x| Could not find address in uart map.\n", m_address);
         printMutex.unlock();
         m_uartCOM = new UartCOM(PC_6, PC_7);
     }
-    printMutex.lock();
-    //printf("Initialised motor %02x.\n", m_address);
-    printMutex.unlock();
 }
 
 Motor::~Motor()
@@ -46,7 +42,7 @@ void Motor::Go(int8_t dirspeed, uint32_t nbSteps)
     {
         success = false;
         printMutex.lock();
-        //printf("Motor::Go| nbSteps is less than 0 (%02x).\n", nbSteps);
+        printf("Motor::Go| nbSteps is less than 0 (%02x).\n", nbSteps);
         printMutex.unlock();
     }
 
@@ -64,23 +60,44 @@ void Motor::Go(int8_t dirspeed, uint32_t nbSteps)
         }
         //std::cout << std::bitset<8>(dirspeed) << std::endl;
 
-        std::vector<int8_t> data;
+        std::vector<uint8_t> data;
         //data.push_back( (direction << 7) | (speed &= 0x7F)); // 1st bit is direction, others are speed
-        data.push_back(static_cast<int8_t>(dirspeed & 0xFF));
+        data.push_back(static_cast<uint8_t>(dirspeed & 0xFF));
         data.push_back(static_cast<uint8_t>((nbSteps >> 24) & 0xFF));
         data.push_back(static_cast<uint8_t>((nbSteps >> 16) & 0xFF));
         data.push_back(static_cast<uint8_t>((nbSteps >> 8) & 0xFF));
         data.push_back(static_cast<uint8_t>(nbSteps & 0xFF));
         Message* messageOut = new Message(m_address, RUN_DIR_PULSES, data);
         //messageOut->display();
-        Message messageIn;
+        auto messageIn = std::make_shared<Message>();
         
         // TODO: clarify
         auto lambda = [this, &messageIn, messageOut]()
         {
             m_uartCOM->Send(messageOut, messageIn);
+            if(m_uartCOM->getState() != uartSM::UART_DONE)
+            {
+                std::cout << "uart not not done" << std::endl;
+            }
+            else
+            {
+                //messageIn->display();
+            }
         };
         m_evQueue->call(lambda);
+
+/*
+        auto lambda2 = [this, messageIn, messageOut]()
+        {
+            uartSM state = m_uartCOM->getState();
+            if(state != uartSM::UART_DONE)
+            {
+                std::cout << "Not ready: " << static_cast<uint8_t>(state) << std::endl;
+            }
+            messageIn->display();
+        };
+        m_evQueue->call(lambda2);
+*/
         //m_evQueue->dispatch_once();
         //m_uartCOM->Send(messageOut, messageIn);
     }
@@ -114,20 +131,20 @@ void Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
     //Construct message
     if(success)
     {
-        std::vector<int8_t> data;
+        std::vector<uint8_t> data;
         data.push_back( (direction << 7) | (speed &= 0x7F)); // 1st bit is direction, others are speed
-        data.push_back(static_cast<int8_t>((nbSteps >> 24) & 0xFF));
-        data.push_back(static_cast<int8_t>((nbSteps >> 16) & 0xFF));
-        data.push_back(static_cast<int8_t>((nbSteps >> 8) & 0xFF));
-        data.push_back(static_cast<int8_t>(nbSteps & 0xFF));
+        data.push_back(static_cast<uint8_t>((nbSteps >> 24) & 0xFF));
+        data.push_back(static_cast<uint8_t>((nbSteps >> 16) & 0xFF));
+        data.push_back(static_cast<uint8_t>((nbSteps >> 8) & 0xFF));
+        data.push_back(static_cast<uint8_t>(nbSteps & 0xFF));
         Message* messageOut = new Message(m_address, RUN_DIR_PULSES, data);
-        messageOut->display();
+        //messageOut->display();
         Message messageIn;
         
         // TODO: clarify
         auto lambda = [this, &messageIn, messageOut]()
         {
-            m_uartCOM->Send(messageOut, messageIn);
+            //m_uartCOM->Send(messageOut, messageIn);
         };
         m_evQueue->call(lambda);
         //m_evQueue->dispatch_once();
@@ -139,30 +156,30 @@ void Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
 
 bool Motor::Calibrate()
 {
-    std::vector<int8_t> data = {0x00};
+    std::vector<uint8_t> data = {0x00};
     Message * messageOut = new Message(m_address, CALIBRATE, data);
     Message messageIn;
-    m_uartCOM->Send(messageOut, messageIn);
-    messageOut->display();
+    //m_uartCOM->Send(messageOut, messageIn);
+    //messageOut->display();
     return true;
 }
 
 bool Motor::SetPID(uint16_t kp, uint16_t ki, uint16_t kd)
 {
-    std::vector<int8_t> data = {(int8_t)((kp >> 8) & 0xFF), (int8_t)(kp & 0xFF)};
+    std::vector<uint8_t> data = {(uint8_t)((kp >> 8) & 0xFF), (uint8_t)(kp & 0xFF)};
     Message * messageOut = new Message(m_address, SET_KP_POS, data);
     Message messageIn;
-    m_uartCOM->Send(messageOut, messageIn);
+    //m_uartCOM->Send(messageOut, messageIn);
 
 
-    data = {(int8_t)((ki >> 8) & 0xFF), (int8_t)(ki & 0xFF)};
+    data = {(uint8_t)((ki >> 8) & 0xFF), (uint8_t)(ki & 0xFF)};
     messageOut = new Message(m_address, SET_KI_POS, data);
-    m_uartCOM->Send(messageOut, messageIn);
+    //m_uartCOM->Send(messageOut, messageIn);
 
 
-    data = {(int8_t)((kd >> 8) & 0xFF), (int8_t)(kd & 0xFF)};
+    data = {(uint8_t)((kd >> 8) & 0xFF), (uint8_t)(kd & 0xFF)};
     messageOut = new Message(m_address, SET_KD_POS, data);
-    m_uartCOM->Send(messageOut, messageIn);
+    //m_uartCOM->Send(messageOut, messageIn);
 
 
     return true;
@@ -173,10 +190,10 @@ bool Motor::SetPID(uint16_t kp, uint16_t ki, uint16_t kd)
 bool Motor::SetACC(uint16_t ACC)
 {
 
-    std::vector<int8_t> data = {(int8_t)((ACC >> 8) & 0xFF), (int8_t)(ACC & 0xFF)};
+    std::vector<uint8_t> data = {(uint8_t)((ACC >> 8) & 0xFF), (uint8_t)(ACC & 0xFF)};
     Message * messageOut = new Message(m_address, SET_ACC, data);
     Message messageIn;
-    m_uartCOM->Send(messageOut, messageIn);
+    //m_uartCOM->Send(messageOut, messageIn);
 
     return true;
 
@@ -185,10 +202,10 @@ bool Motor::SetACC(uint16_t ACC)
 bool Motor::SetMStep(uint8_t mStep)
 {
 
-    std::vector<int8_t> data = {(int8_t)mStep};
+    std::vector<uint8_t> data = {(uint8_t)mStep};
     Message * messageOut = new Message(m_address, SET_SUBDIVISION, data);
     Message messageIn;
-    m_uartCOM->Send(messageOut, messageIn);
+    //m_uartCOM->Send(messageOut, messageIn);
 
     return true;
 
