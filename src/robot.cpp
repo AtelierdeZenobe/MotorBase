@@ -139,7 +139,7 @@ void Robot::Move(void)
     Move();
 
 }
-
+/*
 bool Robot::SetPID(uint16_t kp, uint16_t ki, uint16_t kd)
 {
 
@@ -174,3 +174,4 @@ bool Robot::SetMStep(uint8_t mStep)
 
     return true;
 }
+*/

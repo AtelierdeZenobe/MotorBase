@@ -33,7 +33,7 @@ Motor::~Motor()
     delete(m_evQueue);
 }
 
-void Motor::Go(int8_t dirspeed, uint32_t nbSteps)
+void Motor::Go(uint8_t dirspeed, uint32_t nbSteps)
 {
 
     bool success = true;
@@ -67,22 +67,17 @@ void Motor::Go(int8_t dirspeed, uint32_t nbSteps)
         data.push_back(static_cast<uint8_t>((nbSteps >> 16) & 0xFF));
         data.push_back(static_cast<uint8_t>((nbSteps >> 8) & 0xFF));
         data.push_back(static_cast<uint8_t>(nbSteps & 0xFF));
-        Message* messageOut = new Message(m_address, RUN_DIR_PULSES, data);
+        std::shared_ptr<MessageOut> messageOut = std::make_shared<MessageOut>(m_address, RUN_DIR_PULSES, data);
+
         //messageOut->display();
-        auto messageIn = std::make_shared<Message>();
+        //auto messageIn = std::make_shared<MessageIn>();
+
         
         // TODO: clarify
-        auto lambda = [this, &messageIn, messageOut]()
+        auto lambda = [this, /*&messageIn, */messageOut]()
         {
-            m_uartCOM->Send(messageOut, messageIn);
-            if(m_uartCOM->getState() != uartSM::UART_DONE)
-            {
-                std::cout << "uart not not done" << std::endl;
-            }
-            else
-            {
-                //messageIn->display();
-            }
+            auto answer = m_uartCOM->Send(messageOut/*, messageIn*/);
+            //messageIn->display();
         };
         m_evQueue->call(lambda);
 
@@ -105,6 +100,7 @@ void Motor::Go(int8_t dirspeed, uint32_t nbSteps)
     //return success;
 }
 
+/*
 void Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
 {
 
@@ -153,7 +149,9 @@ void Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
 
     //return success;
 }
+*/
 
+/*
 bool Motor::Calibrate()
 {
     std::vector<uint8_t> data = {0x00};
@@ -210,4 +208,4 @@ bool Motor::SetMStep(uint8_t mStep)
     return true;
 
 }
-
+*/
