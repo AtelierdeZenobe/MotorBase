@@ -77,6 +77,7 @@ void Motor::Go(uint8_t dirspeed, uint32_t nbSteps)
         auto lambda = [this, /*&messageIn, */messageOut]()
         {
             auto answer = m_uartCOM->Send(messageOut/*, messageIn*/);
+            answer.display();
             //messageIn->display();
         };
         m_evQueue->call(lambda);
