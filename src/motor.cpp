@@ -46,19 +46,16 @@ void Motor::Go(uint8_t dirspeed, uint32_t nbSteps)
     
     auto lambda = [this, messageOut]()
     {
-        auto answer = m_uartCOM->Send(messageOut);
+        const auto answer = m_uartCOM->Send(messageOut);
         answer.display();
 
     };
     m_evQueue->call(lambda);
 }
-
 /*
 bool Motor::Calibrate()
 {
-    MessageIn messageIn();
-    messageIn = m_uartCOM->Send(std::make_shared<MessageOut>(m_address, CALIBRATE));
-    //messageOut->display();
+    const auto messageIn = m_uartCOM->Send(std::make_shared<MessageOut>(m_address, CALIBRATE));
     return true;
 }
 
