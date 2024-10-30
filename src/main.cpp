@@ -24,8 +24,9 @@ int main()
     robot->InitializeMotorbase();
 
     //robot->SetACC(0x0100);
-    
-    robot->Move(100, 0, 0, 1, 32);
+
+    robot->Move(0, 0, 720, 100, 32);
+    //robot->Calibrate();
 
 /*
     std::vector<int8_t> data = {0x00,0x60};

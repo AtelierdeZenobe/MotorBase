@@ -139,39 +139,67 @@ void Robot::Move(void)
     Move();
 
 }
-/*
+
+bool Robot::Calibrate()
+{
+    bool success = true;
+    for(const auto& motor : m_motors)
+    {
+        if(!motor->Calibrate())
+        {
+            success = false;
+        }
+    }
+    return success;
+}
+
 bool Robot::SetPID(uint16_t kp, uint16_t ki, uint16_t kd)
 {
-
-
+    bool success = true;
     for(int i = 0; i < N_MOTOR; i++)
     {
-        m_motors[i]->SetPID(kp,ki,kd);     //(Default Kp is 0x650, 0x1, 0x650).
+        if (!m_motors[i]->SetPID(kp,ki,kd))     //(Default Kp is 0x650, 0x1, 0x650).
+        {
+            success = false;
+        }
     }
-        return true;
+    return success;
 }
 
 bool Robot::SetACC(uint16_t ACC)
 {
-
+    bool success = true;
     for(int i = 0; i < N_MOTOR; i++)
     {
-        m_motors[i]->SetACC(ACC);    //(Default ACC is 0x11e)
-
+        if (!m_motors[i]->SetACC(ACC))    //(Default ACC is 0x11e)
+        {
+            success = false;
+        }
     }
 
-    return true;
+    printMutex.lock();
+    if(success)
+    {
+        std::cout << "Successfully set the acceleration\n" << std::endl;
+    }
+    else 
+    {
+        std::cout << "Problem setting the acceleration\n" << std::endl;
+    }
+    printMutex.unlock();
+    return success;
 }
 
 bool Robot::SetMStep(uint8_t mStep)
 {
-
+    bool success = true;
     for(int i = 0; i < N_MOTOR; i++)
     {
-        m_motors[i]->SetMStep(mStep);    
-
+        if (!m_motors[i]->SetMStep(mStep))    
+        {
+            success = false;
+        }
     }
 
-    return true;
+    return success;
 }
-*/
