@@ -1,9 +1,10 @@
-#include"motor.h"
 #include <cstdint>
-#include<iostream>
+#include <iostream>
 #include <memory>
 #include <vector>
-//#include "message.h"
+#include <bitset>
+
+#include "motor.h"
 #include "functionCodes.h"
 #include "uartmap.h"
 
@@ -35,130 +36,28 @@ Motor::~Motor()
 
 void Motor::Go(uint8_t dirspeed, uint32_t nbSteps)
 {
-
-    bool success = true;
-
-    if (nbSteps < 0)
-    {
-        success = false;
-        printMutex.lock();
-        printf("Motor::Go| nbSteps is less than 0 (%02x).\n", nbSteps);
-        printMutex.unlock();
-    }
-
-    //TODO: check for max RPM
+    std::vector<uint8_t> data;
+    data.push_back(static_cast<uint8_t>(dirspeed & 0xFF));
+    data.push_back(static_cast<uint8_t>((nbSteps >> 24) & 0xFF));
+    data.push_back(static_cast<uint8_t>((nbSteps >> 16) & 0xFF));
+    data.push_back(static_cast<uint8_t>((nbSteps >> 8) & 0xFF));
+    data.push_back(static_cast<uint8_t>(nbSteps & 0xFF));
+    std::shared_ptr<MessageOut> messageOut = std::make_shared<MessageOut>(m_address, RUN_DIR_PULSES, data);
     
-    //Construct message
-    if(success)
+    auto lambda = [this, messageOut]()
     {
+        auto answer = m_uartCOM->Send(messageOut);
+        answer.display();
 
-        //std::cout << std::bitset<8>(dirspeed) << " -> ";
-        if(dirspeed < 0)
-        {
-            dirspeed = -dirspeed;
-            dirspeed |= 1 << 7;
-        }
-        //std::cout << std::bitset<8>(dirspeed) << std::endl;
-
-        std::vector<uint8_t> data;
-        //data.push_back( (direction << 7) | (speed &= 0x7F)); // 1st bit is direction, others are speed
-        data.push_back(static_cast<uint8_t>(dirspeed & 0xFF));
-        data.push_back(static_cast<uint8_t>((nbSteps >> 24) & 0xFF));
-        data.push_back(static_cast<uint8_t>((nbSteps >> 16) & 0xFF));
-        data.push_back(static_cast<uint8_t>((nbSteps >> 8) & 0xFF));
-        data.push_back(static_cast<uint8_t>(nbSteps & 0xFF));
-        std::shared_ptr<MessageOut> messageOut = std::make_shared<MessageOut>(m_address, RUN_DIR_PULSES, data);
-
-        //messageOut->display();
-        //auto messageIn = std::make_shared<MessageIn>();
-
-        
-        // TODO: clarify
-        auto lambda = [this, /*&messageIn, */messageOut]()
-        {
-            auto answer = m_uartCOM->Send(messageOut/*, messageIn*/);
-            answer.display();
-            //messageIn->display();
-        };
-        m_evQueue->call(lambda);
-
-/*
-        auto lambda2 = [this, messageIn, messageOut]()
-        {
-            uartSM state = m_uartCOM->getState();
-            if(state != uartSM::UART_DONE)
-            {
-                std::cout << "Not ready: " << static_cast<uint8_t>(state) << std::endl;
-            }
-            messageIn->display();
-        };
-        m_evQueue->call(lambda2);
-*/
-        //m_evQueue->dispatch_once();
-        //m_uartCOM->Send(messageOut, messageIn);
-    }
-
-    //return success;
+    };
+    m_evQueue->call(lambda);
 }
-
-/*
-void Motor::Go(uint8_t direction, uint8_t speed, uint32_t nbSteps)
-{
-
-    bool success = true;
-
-    // Check arguments
-    if(direction>1)
-    {
-        success = false;
-        printMutex.lock();
-        //printf("Motor::Go| direction is greater than 1 (%02x).\n", direction);
-        printMutex.unlock();
-    }
-    else if (nbSteps < 0)
-    {
-        success = false;
-        printMutex.lock();
-        //printf("Motor::Go| nbSteps is less than 0 (%02x).\n", nbSteps);
-        printMutex.unlock();
-    }
-
-    //TODO: check for max RPM
-    
-    //Construct message
-    if(success)
-    {
-        std::vector<uint8_t> data;
-        data.push_back( (direction << 7) | (speed &= 0x7F)); // 1st bit is direction, others are speed
-        data.push_back(static_cast<uint8_t>((nbSteps >> 24) & 0xFF));
-        data.push_back(static_cast<uint8_t>((nbSteps >> 16) & 0xFF));
-        data.push_back(static_cast<uint8_t>((nbSteps >> 8) & 0xFF));
-        data.push_back(static_cast<uint8_t>(nbSteps & 0xFF));
-        Message* messageOut = new Message(m_address, RUN_DIR_PULSES, data);
-        //messageOut->display();
-        Message messageIn;
-        
-        // TODO: clarify
-        auto lambda = [this, &messageIn, messageOut]()
-        {
-            //m_uartCOM->Send(messageOut, messageIn);
-        };
-        m_evQueue->call(lambda);
-        //m_evQueue->dispatch_once();
-        //m_uartCOM->Send(messageOut, messageIn);
-    }
-
-    //return success;
-}
-*/
 
 /*
 bool Motor::Calibrate()
 {
-    std::vector<uint8_t> data = {0x00};
-    Message * messageOut = new Message(m_address, CALIBRATE, data);
-    Message messageIn;
-    //m_uartCOM->Send(messageOut, messageIn);
+    MessageIn messageIn();
+    messageIn = m_uartCOM->Send(std::make_shared<MessageOut>(m_address, CALIBRATE));
     //messageOut->display();
     return true;
 }
