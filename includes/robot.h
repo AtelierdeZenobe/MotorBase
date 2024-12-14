@@ -44,7 +44,7 @@ class Robot
          * @param wanted_mstep : mstep of the motors
          */
         bool Move(const int& wanted_distance, const int& wanted_angle, const int& wanted_rotation, 
-            const int& wanted_speed, const int& wanted_mstep = 128);
+            const int& wanted_speed, const int& wanted_mstep = MSTEP);
 
         /**
          * @brief Move the robot using terminal inputs

@@ -33,6 +33,9 @@ git submodule update --init
 mbed-tools compile -m NUCLEO_F446RE -t GCC_ARM -f #Configure, compile, flash
 ```
 
+Serial console:
+`sudo minicom -D /dev/ttyACM0`
+
 ## Setup the hardware
 
 TO UPDATE for MotorBase

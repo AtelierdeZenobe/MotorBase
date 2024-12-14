@@ -20,7 +20,7 @@ const int SPEED_TO_RPM_FACTOR = 30'000;
 //Variable used to scale the calculated value of the speeds
 const double SPEED_CORRECTION_FACTOR = 0.25;
 
-const uint8_t MSTEP = 0x10; //Mstep = 32
+const int MSTEP = 0x10; //Mstep = 16
 const int RPM_MINIMUM = 0;
 const int RPM_MAXIMUM = 2000;
 const int MSTEP_MINIMUM = 1;

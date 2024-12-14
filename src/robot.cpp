@@ -44,7 +44,7 @@ bool Robot::InitializeMotorbase(void)
     }
 
     //Set mStep
-    //SetMStep(MSTEP);
+    SetMStep(static_cast<uint8_t>(MSTEP)); //COnversion is OK cos 0 <= MSTEP <256
 
 
 // INIT KINEMATICS - MATRIXES

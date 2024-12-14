@@ -25,7 +25,7 @@ int main()
 
     //robot->SetACC(0x0100);
 
-    robot->Move(0, 0, 720, 100, 32);
+    robot->Move(0, 0, 720, 100);
     //robot->Calibrate();
 
 /*
