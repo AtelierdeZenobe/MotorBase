@@ -1,6 +1,10 @@
 #include "robot.h"
 #include <istream>
 
+// Kinematics (p29) : https://pure.tue.nl/ws/portalfiles/portal/4274124/612987.pdf
+// Kinematics (more explanations) : https://www.internationaljournalssrg.org/IJEEE/2019/Volume6-Issue12/IJEEE-V6I12P101.pdf
+
+
 Robot::Robot(EventQueue* EVqueue) : m_EVqueue(EVqueue)
 {
 
@@ -38,6 +42,10 @@ bool Robot::InitializeMotorbase(void)
             return false;
         }
     }
+
+    //Set mStep
+    //SetMStep(MSTEP);
+
 
 // INIT KINEMATICS - MATRIXES
     m_wheelAngularSpeedVector = new Matrix(N_MOTOR, 1);
@@ -87,9 +95,9 @@ bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int&
     }
 
 // INIT KINEMATICS - WANTED VELOCITY VECTOR
-    (*m_wantedVelocityVector)(0,0) = wanted_distance * cos(DEG_TO_RAD * wanted_angle);
-    (*m_wantedVelocityVector)(1,0) = wanted_distance * sin(DEG_TO_RAD * wanted_angle);
-    (*m_wantedVelocityVector)(2,0) = DEG_TO_RAD * wanted_rotation;
+    (*m_wantedVelocityVector)(0,0) = wanted_distance * cos(DEG_TO_RAD * wanted_angle)*(int)MSTEP/wanted_mstep;
+    (*m_wantedVelocityVector)(1,0) = wanted_distance * sin(DEG_TO_RAD * wanted_angle)*(int)MSTEP/wanted_mstep;
+    (*m_wantedVelocityVector)(2,0) = DEG_TO_RAD * wanted_rotation*(int)MSTEP/wanted_mstep;
 
 // COMPUTE KINEMATICS
     (*m_wheelAngularSpeedVector) = (*m_inverseJacobianKinematicsMatrix) * (*m_wantedVelocityVector);
@@ -114,6 +122,7 @@ bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int&
 
     return true;
 }
+
 
 void Robot::Move(void)
 {
@@ -206,14 +215,66 @@ void Robot::Move(void)
     Move(); // Callback for next movement
 }
 
-/*
-bool Robot::CalibrateMotors(void)
-{  
+bool Robot::Calibrate()
+{
+    bool success = true;
+    for(const auto& motor : m_motors)
+    {
+        if(!motor->Calibrate())
+        {
+            success = false;
+        }
+    }
+    return success;
+}
+
+bool Robot::SetPID(uint16_t kp, uint16_t ki, uint16_t kd)
+{
+    bool success = true;
     for(int i = 0; i < N_MOTOR; i++)
     {
-        m_motors[i]->Calibrate();
+        if (!m_motors[i]->SetPID(kp,ki,kd))     //(Default Kp is 0x650, 0x1, 0x650).
+        {
+            success = false;
+        }
+    }
+    return success;
+}
+
+bool Robot::SetACC(uint16_t ACC)
+{
+    bool success = true;
+    for(int i = 0; i < N_MOTOR; i++)
+    {
+        if (!m_motors[i]->SetACC(ACC))    //(Default ACC is 0x11e)
+        {
+            success = false;
+        }
     }
 
-    return true;
+    printMutex.lock();
+    if(success)
+    {
+        std::cout << "Successfully set the acceleration\n" << std::endl;
+    }
+    else 
+    {
+        std::cout << "Problem setting the acceleration\n" << std::endl;
+    }
+    printMutex.unlock();
+    return success;
 }
-*/
+
+bool Robot::SetMStep(uint8_t mStep)
+{
+    bool success = true;
+    for(int i = 0; i < N_MOTOR; i++)
+    {
+        if (!m_motors[i]->SetMStep(mStep))    
+        {
+            success = false;
+        }
+    }
+
+    return success;
+}

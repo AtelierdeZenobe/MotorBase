@@ -14,33 +14,30 @@
 
 int main()
 {
+    std::cout << "Print from main" << std::endl;
+
     EventQueue EVqueue;
     Thread eventThread;
     eventThread.start(callback(&EVqueue, &EventQueue::dispatch_forever));
 
-// Kinematics (p29) : https://pure.tue.nl/ws/portalfiles/portal/4274124/612987.pdf
-// Kinematics (more explanations) : https://www.internationaljournalssrg.org/IJEEE/2019/Volume6-Issue12/IJEEE-V6I12P101.pdf
-
     auto robot = new Robot(&EVqueue);
     robot->InitializeMotorbase();
-    //robot->CalibrateMotors();
-    //robot->Move(0, 0, 720, 1, 8);
 
-    robot->Move();
+    //robot->SetACC(0x0100);
+
+    robot->Move(0, 0, 720, 100, 32);
+    //robot->Calibrate();
 
 /*
-    std::cout << *(robot->m_inverseJacobianKinematicsMatrix) << std::endl;
-    std::cout << *(robot->m_wantedVelocityVector) << std::endl;
-    std::cout << *(robot->m_wheelAngularSpeedVector) << std::endl;
+    std::vector<int8_t> data = {0x00,0x60};
+    auto uartCOM = new UartCOM(PC_10, PC_11);
+    Message * messageOut = new Message(0xE1, SET_ACC, data);
+    Message messageIn;
+    uartCOM->Send(messageOut, messageIn);
+
 */
 
-    EVqueue.dispatch_forever();
-    while(true);
-    // 1 revolution at lowest speed (Steps/revolution = 200)
-    // Vrpm = (Speed x 30000)/(Mstep x 200) -> MAX 2000RPM
-    // => At Mstep = 1, max speed is 
 
-
-    
+    EVqueue.dispatch_forever();    
 
 };
