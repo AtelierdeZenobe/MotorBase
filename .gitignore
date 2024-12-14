@@ -6,4 +6,4 @@ mbed-os
 BUILD
 
 EasyCAT_lib/
-
+cmake_build/
