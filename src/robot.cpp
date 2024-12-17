@@ -20,109 +20,97 @@ Robot::~Robot()
     delete m_wheelAngularSpeedVector;
     delete m_inverseJacobianKinematicsMatrix;
     delete m_wantedVelocityVector;
+
+    SetMStep(static_cast<uint8_t>(MSTEP)); //COnversion is OK cos 0 <= MSTEP <256
+
+}
+
+bool invertMatrix(const float input[3][3], float output[3][3]) {
+    float determinant = 0;
+
+    // Calculate the determinant of the matrix
+    for (int i = 0; i < 3; i++) {
+        determinant += (input[0][i] * (input[1][(i + 1) % 3] * input[2][(i + 2) % 3] - input[1][(i + 2) % 3] * input[2][(i + 1) % 3]));
+    }
+
+    if (determinant == 0) {
+        std::cerr << "Matrix is not invertible (determinant is 0)." << std::endl;
+        return false;
+    }
+
+    float invDet = 1.0f / determinant;
+
+    // Calculate the inverse matrix using the formula
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            output[j][i] = invDet * (input[(i + 1) % 3][(j + 1) % 3] * input[(i + 2) % 3][(j + 2) % 3] - input[(i + 1) % 3][(j + 2) % 3] * input[(i + 2) % 3][(j + 1) % 3]);
+        }
+    }
+
+    return true;
 }
 
 bool Robot::InitializeMotorbase(void)
 {
-// CHECK VALUES
-    if(ROBOT_RADIUS <= 0 || WHEEL_RADIUS <= 0 || N_MOTOR != 3 || X_AXIS_ANGLE_MOTORS.size() != N_MOTOR || ADDRESS_MOTORS.size() != N_MOTOR)
-    {
-        std::cout << "Error: Initialization check values failed" << std::endl;
-        return false;
-    }
-
-// INIT MOTORS
-    for(int i = 0; i < N_MOTOR; i++)
-    {
-        m_motors[i] = new Motor(ADDRESS_MOTORS[i], m_EVqueue);
-
-        if(m_motors[i] == nullptr)
-        {
-            std::cout << "Error: Unable to create the motor" << std::endl;
-            return false;
-        }
-    }
-
-    //Set mStep
-    SetMStep(static_cast<uint8_t>(MSTEP)); //COnversion is OK cos 0 <= MSTEP <256
-
-
-// INIT KINEMATICS - MATRIXES
-    m_wheelAngularSpeedVector = new Matrix(N_MOTOR, 1);
-    m_inverseJacobianKinematicsMatrix = new Matrix(N_MOTOR, 3);
-    m_wantedVelocityVector = new Matrix(3, 1);
-
-    if(m_wheelAngularSpeedVector == nullptr || m_inverseJacobianKinematicsMatrix == nullptr || m_wantedVelocityVector == nullptr)
-    {
-        std::cout << "Error: Unable to create kinematics matrixes" << std::endl;
-        return false;
-    }
-
-// COMPUTE KINEMATICS - INVERSE JACOBIAN MATRIX 
-    for(int i = 0; i < N_MOTOR; i++)
-    {
-        (*m_inverseJacobianKinematicsMatrix)(i,0) = -sin(DEG_TO_RAD * X_AXIS_ANGLE_MOTORS[i]);
-        (*m_inverseJacobianKinematicsMatrix)(i,1) = cos(DEG_TO_RAD * X_AXIS_ANGLE_MOTORS[i]);
-        (*m_inverseJacobianKinematicsMatrix)(i,2) = ROBOT_RADIUS;
-    }
-
-    (*m_inverseJacobianKinematicsMatrix) *= (1.0 / WHEEL_RADIUS);
-
     return true;
 }
 
 bool Robot::Move(const int& wanted_distance, const int& wanted_angle, const int& wanted_rotation, 
     const int& wanted_speed, const int& wanted_mstep)
 {
-//CHECK VALUES
-    if(N_MOTOR != 3) //N_MOTOR
+    /*
+    phi 1 is roue 3
+    */
+    // Derived from wanted_angle and wanted_speed
+    //TODO: wanted angular rotation as additional parameter ?
+
+    float vx=wanted_speed*cos(wanted_angle*DEG_TO_RAD), vy=wanted_speed*sin(wanted_angle*DEG_TO_RAD), w=(float)wanted_speed/ROBOT_RADIUS;
+
+    std::cout << "wanted speed" << wanted_speed << std::endl;
+    std::cout << "w" << w << std::endl;
+    if(wanted_distance==0)
     {
-        std::cout << "Error: Invalid N_MOTOR value found" << std::endl;
-        return false;
+        vx = 0;
+        vy = 0;
     }
-
-    if(wanted_speed < RPM_MINIMUM || wanted_speed > RPM_MAXIMUM)
+    
+    if(wanted_rotation==0)
     {
-        std::cout << "Error: wanted_speed is not in the range" << std::endl;
-        return false;
+        w=0;
     }
+    // TODO: compute the cos and sines only once at init
+    // TODO: correct types to avoid conversion erros
+    float θ = 60*DEG_TO_RAD; // angle to the first wheel (number 3)
+    float 𝛼[3] = {0,120*DEG_TO_RAD,240*DEG_TO_RAD};
+    float beta = wanted_angle * DEG_TO_RAD;
 
-    //Check that wanted_mstep is in a correct range and that it is a power of 2 also
-    if(wanted_mstep < MSTEP_MINIMUM || wanted_mstep > MSTEP_MAXIMUM || (wanted_mstep & (wanted_mstep - 1)) != 0)
-    {
-        std::cout << "Error: wanted_mstep is not in the range" << std::endl;
-        return false;
-    }
+    // TODO: pre-compute sin(theta) and cos(theta)
+    //https://www.internationaljournalssrg.org/IJEEE/2019/Volume6-Issue12/IJEEE-V6I12P101.pdf
+    float w1 = (-sin(θ) * cos(θ) * vx + cos(θ) * cos(θ) * vy + ROBOT_RADIUS * w )/WHEEL_RADIUS;
+    float w2 = (-sin(θ + 𝛼[1]) * cos(θ) * vx + cos(θ + 𝛼[1]) * cos(θ) * vy + ROBOT_RADIUS * w )/WHEEL_RADIUS;
+    float w3 = (-sin(θ + 𝛼[2]) * cos(θ) * vx + cos(θ + 𝛼[2]) * cos(θ) * vy + ROBOT_RADIUS * w )/WHEEL_RADIUS;
 
-// INIT KINEMATICS - WANTED VELOCITY VECTOR
-    (*m_wantedVelocityVector)(0,0) = wanted_distance * cos(DEG_TO_RAD * wanted_angle)*(int)MSTEP/wanted_mstep;
-    (*m_wantedVelocityVector)(1,0) = wanted_distance * sin(DEG_TO_RAD * wanted_angle)*(int)MSTEP/wanted_mstep;
-    (*m_wantedVelocityVector)(2,0) = DEG_TO_RAD * wanted_rotation*(int)MSTEP/wanted_mstep;
+    std::cout << "w1: " << w1 << std::endl;
+    std::cout << "w2: " << w2 << std::endl;
+    std::cout << "w3: " << w3 << std::endl;
 
-// COMPUTE KINEMATICS
-    (*m_wheelAngularSpeedVector) = (*m_inverseJacobianKinematicsMatrix) * (*m_wantedVelocityVector);
+    float t1 = std::abs(wanted_distance * cos(beta) * 200 / (2 * PI * WHEEL_RADIUS * sin(θ)) - wanted_distance * sin(beta) * 200 / (2 * PI * WHEEL_RADIUS * cos(θ)) + wanted_rotation * ROBOT_RADIUS * 200 / (WHEEL_RADIUS * 360));
+    float t2 = std::abs(- wanted_distance * sin(beta) * 200 / (2 * PI * WHEEL_RADIUS* cos(θ+𝛼[1])) + wanted_rotation * ROBOT_RADIUS * 200 / (WHEEL_RADIUS * 360));
+    float t3 = std::abs(wanted_distance * cos(beta) * 200 / (2 * PI * WHEEL_RADIUS * sin(θ+𝛼[2])) - wanted_distance * sin(beta) * 200 / (2 * PI * WHEEL_RADIUS * cos(θ+𝛼[2])) + wanted_rotation * ROBOT_RADIUS * 200 / (WHEEL_RADIUS * 360));
 
-    double normWheelAngularSpeedVector;
-    if(!Matrix::normVector(*m_wheelAngularSpeedVector, &normWheelAngularSpeedVector))
-    {
-        std::cout << "Error : Matrix incorrectly used as vector" << std::endl;
-        return false;
-    }
+    std::cout << "t1: " << t1 << std::endl;
+    std::cout << "t2: " << t2 << std::endl;
+    std::cout << "t3: " << t3 << std::endl;
 
-    double steps_factor = wanted_mstep * TICS_PER_ROTATION / (2 * PI);
-    double speed_factor = wanted_mstep * wanted_speed * TICS_PER_ROTATION * WHEEL_RADIUS * 1.0 
-        / (SPEED_TO_RPM_FACTOR * SPEED_CORRECTION_FACTOR * normWheelAngularSpeedVector);
+    std::cout << "t1/t2: " << t1/t2 << std::endl;
+    std::cout << "v1/v2: " << w1/w2 << std::endl;
 
-// SEND DATA TO MOTORS
-    for(int i = 0; i < N_MOTOR; i++)
-    {
-        m_motors[i]->Go(static_cast<int>((*m_wheelAngularSpeedVector)(i,0) * speed_factor), 
-            static_cast<int>(std::abs((*m_wheelAngularSpeedVector)(i,0)) * steps_factor));
-    }
+    std::cout << "rotation" << wanted_rotation * ROBOT_RADIUS * 200 / (WHEEL_RADIUS * 360) << std::endl;
+
+
 
     return true;
 }
-
 
 void Robot::Move(void)
 {

@@ -25,7 +25,12 @@ int main()
 
     //robot->SetACC(0x0100);
 
-    robot->Move(0, 0, 720, 100);
+    std::cout << "\n100 0 0 100" << std::endl;
+    robot->Move(100, 0, 0, 100);
+    std::cout << "\n100 90 0 100" << std::endl;
+    robot->Move(100, 90, 0, 100);
+    std::cout << "\n0 0 360 100" << std::endl;
+    robot->Move(0, 0, 360, 100);
     //robot->Calibrate();
 
 /*
@@ -37,7 +42,5 @@ int main()
 
 */
 
-
     EVqueue.dispatch_forever();    
-
 };
