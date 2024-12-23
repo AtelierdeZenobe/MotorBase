@@ -14,7 +14,7 @@
 
 int main()
 {
-    std::cout << "Print from main" << std::endl;
+    std::cout << "\n\nPrint from main" << std::endl;
 
     EventQueue EVqueue;
     Thread eventThread;
@@ -25,15 +25,10 @@ int main()
 
     //robot->SetACC(0x0100);
     robot->SetACC(0x11e);
-    std::cout << "\n100 0 0 100" << std::endl;
-    robot->Move(100, 0, 0, 100);
-    std::cout << "\n100 90 0 100" << std::endl;
-    robot->Move(100, 90, 0, 100);
-    std::cout << "\n0 0 360 100" << std::endl;
     robot->SetPID(0x650, 0x1, 0x650);
-    //robot->Move(0, 0, 360, 100);
-    // Asking to move for 100mm at 10mm/s -> Should move for 10s
-    robot->Move(100, 0, 0, 10);
+    //robot->Move(0, 0, 720, 100);
+    // Should move for 10s
+    robot->Move(1000, 0, 0, 100, 0);
     //robot->Calibrate();
 
 /*

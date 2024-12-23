@@ -46,10 +46,12 @@ void Motor::Go(uint8_t dirspeed, uint32_t nbSteps)
     
     auto lambda = [this, messageOut]()
     {
-        const auto answer = m_uartCOM->Send(messageOut);
-        answer.display();
+        // const auto answer =
+        m_uartCOM->Send(messageOut);
+        //answer.display();
     };
     m_evQueue->call(lambda);
+
 }
 
 // TODO: command function
@@ -103,7 +105,9 @@ bool Motor::SetACC(uint16_t ACC)
 
     std::vector<uint8_t> data = {(uint8_t)((ACC >> 8) & 0xFF), (uint8_t)(ACC & 0xFF)};
     std::shared_ptr<MessageOut> command = std::make_shared<MessageOut>(m_address, SET_ACC, data);
+    
     const auto messageIn = m_uartCOM->Send(command);
+    /*
     messageIn.display();
     if(messageIn.getData()[0] != 0x01)
     {
@@ -112,7 +116,7 @@ bool Motor::SetACC(uint16_t ACC)
         printMutex.unlock();
         success = false;
     }
-
+    */
     return success;
 }
 

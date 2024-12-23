@@ -20,7 +20,7 @@ const int SPEED_TO_RPM_FACTOR = 30'000;
 //Variable used to scale the calculated value of the speeds
 const double SPEED_CORRECTION_FACTOR = 0.25;
 
-const int MSTEP = 0x10; //Mstep = 16
+const int MSTEP = 150; //Mstep = 16
 const int RPM_MINIMUM = 0;
 const int RPM_MAXIMUM = 2000;
 const int MSTEP_MINIMUM = 1;
@@ -30,6 +30,9 @@ const int MSTEP_MAXIMUM = 256;
  * @attention Items have to be correctly associated and following counterclockwise ordrer
  */
 const std::vector<int> X_AXIS_ANGLE_MOTORS = { 60, 180, 300 };
+
+const double θ = 60*DEG_TO_RAD;
+const double a[3] = {0, 120*DEG_TO_RAD, 240*DEG_TO_RAD};
 
 /**
  * @attention Items have to be correctly associated and following counterclockwise ordrer
