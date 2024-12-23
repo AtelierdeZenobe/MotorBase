@@ -26,8 +26,10 @@ git submodule update --init
 ### Mbed CLI 2 (Linux)
 ```
 mbed-tools new MotorBase
+cd MotorBase
 git init
 git remote add origin git@github.com:AtelierdeZenobe/MotorBase.git
+git fetch
 git reset --hard origin/main
 git submodule update --init
 mbed-tools compile -m NUCLEO_F446RE -t GCC_ARM -f #Configure, compile, flash

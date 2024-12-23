@@ -241,13 +241,9 @@ bool Robot::SetACC(uint16_t ACC)
     }
 
     printMutex.lock();
-    if(success)
+    if(!success)
     {
-        std::cout << "Successfully set the acceleration\n" << std::endl;
-    }
-    else 
-    {
-        std::cout << "Problem setting the acceleration\n" << std::endl;
+        std::cerr << "Problem setting the acceleration\n" << std::endl;
     }
     printMutex.unlock();
     return success;
