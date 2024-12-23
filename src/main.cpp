@@ -24,8 +24,11 @@ int main()
     robot->InitializeMotorbase();
 
     //robot->SetACC(0x0100);
-
-    robot->Move(0, 0, 720, 100);
+    robot->SetACC(0x11e);
+    robot->SetPID(0x650, 0x1, 0x650);
+    //robot->Move(0, 0, 720, 100);
+    // Asking to move for 100mm at 10mm/s -> Should move for 10s
+    robot->Move(100, 0, 0, 10);
     //robot->Calibrate();
 
 /*

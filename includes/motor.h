@@ -30,7 +30,7 @@ class Motor
     bool SetMStep(uint8_t mStep);
     
     private:
-    EventQueue *m_evQueue;
     uint8_t m_address = 0xE0;
+    EventQueue *m_evQueue;
     UartCOM * m_uartCOM;// = UartCOM(PC_10, PC_11); // Each motor will have its own uart com.
 };
