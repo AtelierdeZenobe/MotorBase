@@ -21,14 +21,14 @@ int main()
     eventThread.start(callback(&EVqueue, &EventQueue::dispatch_forever));
 
     auto robot = new Robot(&EVqueue);
-    robot->InitializeMotorbase();
-
+    //robot->Calibrate();
     //robot->SetACC(0x0100);
-    robot->SetACC(0x11e);
-    robot->SetPID(0x650, 0x1, 0x650);
-    //robot->Move(0, 0, 720, 100);
+    //robot->SetACC(0x11e);
+    //robot->SetPID(0x0650, 0x1, 0x250);
+    robot->Move(1000, 0, 0, 1000, 1);
     // Should move for 10s
-    robot->Move(1000, 0, 0, 100, 0);
+    // robot->Move(500, PI/2, 0, 100, 0);
+    //robot->Move(500, 0, 0, 100, 0);
     //robot->Calibrate();
 
 /*

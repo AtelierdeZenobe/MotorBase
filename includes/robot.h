@@ -44,7 +44,7 @@ class Robot
          * @param wanted_mstep : mstep of the motors
          */
         bool Move(const double& wanted_distance, const double& wanted_angle, const double& wanted_rotation, 
-            const double& wanted_speed, const double& wanted_rotational_speed, const double& wanted_mstep = MSTEP);
+            const double& wanted_speed, const double& wanted_mstep = MSTEP);
 
         /**
         * @brief Set PID of all robot's motor

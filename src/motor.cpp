@@ -51,7 +51,6 @@ void Motor::Go(uint8_t dirspeed, uint32_t nbSteps)
         //answer.display();
     };
     m_evQueue->call(lambda);
-
 }
 
 // TODO: command function
