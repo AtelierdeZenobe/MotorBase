@@ -59,15 +59,16 @@ bool Motor::Calibrate()
     // TODO: Simultaneous.
     bool success = true;
     std::shared_ptr<MessageOut> command = std::make_shared<MessageOut>(m_address, CALIBRATE, std::vector<uint8_t>{0x00});
-    const auto messageIn = m_uartCOM->Send(command);
-    if(messageIn.getData()[0] != 0x01)
-    {
-        printMutex.lock();
-        printf("Calibrate returned %d instead of 0x01.\n", messageIn.getData()[0]);
-        printMutex.unlock();
-        success = false;
-    }
-    return success;
+    m_uartCOM->Send(command);
+    // const auto messageIn = m_uartCOM->Send(command);
+    // if(messageIn.getData()[0] != 0x01)
+    // {
+    //     printMutex.lock();
+    //     printf("Calibrate returned %d instead of 0x01.\n", messageIn.getData()[0]);
+    //     printMutex.unlock();
+    //     success = false;
+    // }
+    // return success;
 }
 
 
@@ -83,15 +84,16 @@ bool Motor::SetPID(uint16_t kp, uint16_t ki, uint16_t kd)
     {
         std::vector<uint8_t> data = {(uint8_t)((factors[i] >> 8) & 0xFF), (uint8_t)(factors[i] & 0xFF)};
         std::shared_ptr<MessageOut> command = std::make_shared<MessageOut>(m_address, commands[i], data);
-        auto messageIn = m_uartCOM->Send(command);
+        m_uartCOM->Send(command);
+        // auto messageIn = m_uartCOM->Send(command);
 
-        if(messageIn.getData()[0] != 0x01)
-        {
-            printMutex.lock();
-            printf("SetPID returned %d instead of 0x01.\n", messageIn.getData()[0]);
-            printMutex.unlock();
-            success = false;
-        }
+        // if(messageIn.getData()[0] != 0x01)
+        // {
+        //     printMutex.lock();
+        //     printf("SetPID returned %d instead of 0x01.\n", messageIn.getData()[0]);
+        //     printMutex.unlock();
+        //     success = false;
+        // }
     }
 
     return success;
@@ -104,8 +106,8 @@ bool Motor::SetACC(uint16_t ACC)
 
     std::vector<uint8_t> data = {(uint8_t)((ACC >> 8) & 0xFF), (uint8_t)(ACC & 0xFF)};
     std::shared_ptr<MessageOut> command = std::make_shared<MessageOut>(m_address, SET_ACC, data);
-    
-    const auto messageIn = m_uartCOM->Send(command);
+    m_uartCOM->Send(command);
+    // const auto messageIn = m_uartCOM->Send(command);
     /*
     messageIn.display();
     if(messageIn.getData()[0] != 0x01)
@@ -124,14 +126,15 @@ bool Motor::SetMStep(uint8_t mStep)
     bool success = true;
     std::vector<uint8_t> data = {(uint8_t)mStep};
     std::shared_ptr<MessageOut> command = std::make_shared<MessageOut>(m_address, SET_SUBDIVISION, data);
-    const auto messageIn = m_uartCOM->Send(command);
-    if(messageIn.getData()[0] != 0x01)
-    {
-        printMutex.lock();
-        printf("SetMStep returned %d instead of 0x01.\n", messageIn.getData()[0]);
-        printMutex.unlock();
-        success = false;
-    }
+    m_uartCOM->Send(command);
+    // const auto messageIn = m_uartCOM->Send(command);
+    // if(messageIn.getData()[0] != 0x01)
+    // {
+    //     printMutex.lock();
+    //     printf("SetMStep returned %d instead of 0x01.\n", messageIn.getData()[0]);
+    //     printMutex.unlock();
+    //     success = false;
+    // }
 
     return success;
 }
