@@ -31,7 +31,7 @@ const double MSTEP_MAXIMUM = 256;
  */
 const std::vector<double> X_AXIS_ANGLE_MOTORS = { 60, 180, 300 };
 
-const double θ = 60*DEG_TO_RAD;
+const double theta = 60*DEG_TO_RAD;
 const double a[3] = {0, 120*DEG_TO_RAD, 240*DEG_TO_RAD};
 
 /**

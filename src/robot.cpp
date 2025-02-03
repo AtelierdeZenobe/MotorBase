@@ -8,6 +8,7 @@
 
 Robot::Robot(EventQueue* EVqueue) : m_EVqueue(EVqueue)
 {
+    // InitializeMotorbase();
     InitializeMotorbase();
 }
 
@@ -21,14 +22,11 @@ Robot::~Robot()
     delete m_wheelAngularSpeedVector;
     delete m_inverseJacobianKinematicsMatrix;
     delete m_wantedVelocityVector;
-
-    SetMStep(static_cast<uint8_t>(MSTEP)); //COnversion is OK cos 0 <= MSTEP <256
-
 }
 
 bool Robot::InitializeMotorbase(void)
 {
-        for(int i = 0; i < N_MOTOR; i++)
+    for(int i = 0; i < N_MOTOR; i++)
     {
         m_motors[i] = new Motor(ADDRESS_MOTORS[i], m_EVqueue);
 
@@ -40,25 +38,29 @@ bool Robot::InitializeMotorbase(void)
     }
 
     //Set mStep
-    SetMStep(static_cast<uint8_t>(MSTEP)); //COnversion is OK cos 0 <= MSTEP <256
+    SetMStep(static_cast<uint8_t>(MSTEP)); //Conversion is OK cos 0 <= MSTEP <256
 
     return true;
 }
 
 bool Robot::Move(const double& wanted_distance, const double& wanted_angle, const double& wanted_rotation, 
-    const double& wanted_speed, const double& wanted_mstep)
+    double& wanted_speed, const double& wanted_mstep)
 {
     const double r = static_cast<double>(WHEEL_RADIUS);
     const double R = static_cast<double>(ROBOT_RADIUS);
 
-    double wanted_rotational_speed = wanted_rotation * DEG_TO_RAD * wanted_speed / wanted_distance;
+    double wanted_rotational_speed = wanted_distance != 0 ? wanted_rotation * DEG_TO_RAD * wanted_speed / wanted_distance : 1;
+    // deg * (rad/deg) * (mm/s) / mm = rad/s
+
+    if(wanted_distance == 0) wanted_speed = 0;
 
     std::vector<double> W(3, 0.0);
     for(int i=0; i<3; i++)
     {
-        W[i] =  (-sin(θ+a[i])*wanted_speed*cos(wanted_angle*DEG_TO_RAD)
-                +cos(θ+a[i])*wanted_speed*sin(wanted_angle*DEG_TO_RAD)
-                +R*wanted_rotational_speed)/r;
+        W[i] =  (-sin(theta+a[i])*wanted_speed*cos(wanted_angle*DEG_TO_RAD) // mm/s
+                +cos(theta+a[i])*wanted_speed*sin(wanted_angle*DEG_TO_RAD)
+                +R*wanted_rotational_speed) // mm * rad/s
+                /r; 
         printMutex.lock();
         std::cout << "WHeel " << i << " angular speed: " << W[i] << " rad/s" << std::endl;
         printMutex.unlock();
@@ -73,10 +75,12 @@ bool Robot::Move(const double& wanted_distance, const double& wanted_angle, cons
 
         // Portion of D in the wheel rotation direction
         // Portion due to translation
-        ticks[i] = - wanted_distance * sin (θ + a[i] - wanted_angle*DEG_TO_RAD) * TICS_PER_ROTATION / (2 * PI * r);
+        ticks[i] = - wanted_distance * sin (theta + a[i] - wanted_angle*DEG_TO_RAD) * TICS_PER_ROTATION / (2 * PI * r);
 
         // Portion due to rotation
         ticks[i] += wanted_rotation*DEG_TO_RAD * R / (r) * TICS_PER_ROTATION / (2*PI);
+
+        ticks[i] = std::abs(ticks[i]);
         printMutex.lock();
         std::cout << "Motor 1 goes for " << ticks[i] << " ticks." << std::endl;
         printMutex.unlock();
