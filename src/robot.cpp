@@ -81,26 +81,27 @@ bool Robot::Move(const double& wanted_distance, const double& wanted_angle, cons
         ticks[i] += wanted_rotation*DEG_TO_RAD * R / (r) * TICS_PER_ROTATION / (2*PI);
 
         ticks[i] = std::abs(ticks[i]);
-        printMutex.lock();
-        std::cout << "Motor 1 goes for " << ticks[i] << " ticks." << std::endl;
-        printMutex.unlock();
+        // printMutex.lock();
+        // std::cout << "Motor " << i << " goes for " << ticks[i] << " ticks." << std::endl;
+        // printMutex.unlock();
     }
 
     for(size_t i = 0; i<N_MOTOR; ++i)
     {
         // Convert rotational speed to motor instruction (motor datasheet)
-        printMutex.lock();
+        
         const double Wrpm = W[i]*(double)60/(2*PI);
         const double speed = Wrpm * (double)TICS_PER_ROTATION * (double)MSTEP / 30000;
-        std::cout << "Speed of motor " << i << ": " << speed << "(Servo42C speed)" << std::endl;
-        printMutex.unlock();
+        // printMutex.lock();
+        // std::cout << "Speed of motor " << i << ": " << speed << "(Servo42C speed)" << std::endl;
+        // printMutex.unlock();
         // Convert to uint8_t for sending
         uint8_t sign_bit = (speed < 0) ? 0x80 : 0x00;
         uint8_t abs_speed = (uint8_t)round(fabs(speed));
         uint8_t uiSpeed = sign_bit | (abs_speed & 0x7F);
-        printMutex.lock();
-        std::cout << "To motor: " << bitset<8>(uiSpeed) << std::endl;
-        printMutex.unlock();
+        // printMutex.lock();
+        // std::cout << "To motor: " << bitset<8>(uiSpeed) << std::endl;
+        // printMutex.unlock();
         m_motors[i]->Go(uiSpeed, static_cast<uint32_t>(ticks[i] * MSTEP));
         
     }

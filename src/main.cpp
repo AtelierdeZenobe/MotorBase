@@ -29,8 +29,11 @@ int main()
 
     double speed = 100;
     robot->Move(1000, 0, 0, speed, 0);
-    wait_us(1000000);
-    robot->Move(1000, 180, 0, speed, 0);
+    // wait_us(1000000);
+    // robot->Move(1000, 90, 0, speed, 0);
+    // wait_us(1000000);
+    // robot->Move(0, 0, 360, speed, 0);
+
     // Should move for 10s
     //robot->Move(500, PI/2, 0, 100, 0);
     //robot->Move(500, 0, 0, 100, 0);

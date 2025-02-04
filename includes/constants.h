@@ -20,7 +20,7 @@ const double SPEED_TO_RPM_FACTOR = 30'000;
 //Variable used to scale the calculated value of the speeds
 const double SPEED_CORRECTION_FACTOR = 0.25;
 
-const double MSTEP = 16; //Mstep = 16
+const double MSTEP = 64; //Mstep = 16
 const double RPM_MINIMUM = 0;
 const double RPM_MAXIMUM = 2000;
 const double MSTEP_MINIMUM = 1;
