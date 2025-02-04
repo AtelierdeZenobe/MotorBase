@@ -43,14 +43,8 @@ class Robot
          * @param wanted_speed : speed of the motors in mm/s
          * @param wanted_mstep : mstep of the motors
          */
-        bool Move(const int& wanted_distance, const int& wanted_angle, const int& wanted_rotation, 
-            const int& wanted_speed, const int& wanted_mstep = MSTEP);
-
-        /**
-         * @brief Move the robot using terminal inputs
-         */
-        void Move(void);
-
+        bool Move(const double& wanted_distance, const double& wanted_angle, const double& wanted_rotation, 
+            double& wanted_speed, const double& wanted_mstep = MSTEP);
 
         /**
         * @brief Set PID of all robot's motor

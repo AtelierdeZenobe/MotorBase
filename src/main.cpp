@@ -14,21 +14,29 @@
 
 int main()
 {
-    std::cout << "Print from main" << std::endl;
+    std::cout << "\n\nPrint from main" << std::endl;
 
     EventQueue EVqueue;
     Thread eventThread;
     eventThread.start(callback(&EVqueue, &EventQueue::dispatch_forever));
 
     auto robot = new Robot(&EVqueue);
-    robot->InitializeMotorbase();
-
+    //robot->InitializeMotorbase();
+    //robot->Calibrate();
     //robot->SetACC(0x0100);
-    robot->SetACC(0x11e);
-    robot->SetPID(0x650, 0x1, 0x650);
-    //robot->Move(0, 0, 720, 100);
-    // Asking to move for 100mm at 10mm/s -> Should move for 10s
-    robot->Move(100, 0, 0, 10);
+    //robot->SetACC(0x11e);
+    //robot->SetPID(0x0650, 0x1, 0x250);
+
+    double speed = 100;
+    robot->Move(1000, 0, 0, speed, 0);
+    // wait_us(1000000);
+    // robot->Move(1000, 90, 0, speed, 0);
+    // wait_us(1000000);
+    // robot->Move(0, 0, 360, speed, 0);
+
+    // Should move for 10s
+    //robot->Move(500, PI/2, 0, 100, 0);
+    //robot->Move(500, 0, 0, 100, 0);
     //robot->Calibrate();
 
 /*
@@ -40,7 +48,5 @@ int main()
 
 */
 
-
     EVqueue.dispatch_forever();    
-
 };
