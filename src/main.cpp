@@ -48,7 +48,7 @@ int main()
         }
 
         static int count = 0;
-        if(count % 100 == 0)
+        if(count++ % 100 == 0)
         {
             printf("wanted distance MSB: %02x\n",EASYCAT.BufferOut.Byte[0]);
             printf("wanted distance: LSB: %02x\n",EASYCAT.BufferOut.Byte[1]);
@@ -60,16 +60,16 @@ int main()
         EASYCAT.BufferIn.Byte[1]=0x02;
         EASYCAT.BufferIn.Byte[2]=0x03; 
     
-        uint16_t wanted_speed = ((EASYCAT.BufferOut.Byte[0] << 8) & 0xF0) | EASYCAT.BufferOut.Byte[1];
-        printf("wanted_speed %02x\n", wanted_speed);
+        double wanted_speed = static_cast<double>(((EASYCAT.BufferOut.Byte[0] << 8) & 0xF0) | EASYCAT.BufferOut.Byte[1]);
+        printf("wanted_speed %f\n", wanted_speed);
         //ThisThread::sleep_for(100);
         if(EASYCAT.BufferOut.Byte[1] % 2 == 0)
         {
-            //robot->Move(wanted_speed, 0, 0, 1, 32);
+            robot->Move(100, 0, 0, wanted_speed);
         }
         else
         {
-            //robot->Move(wanted_speed, 180, 0, 1, 32);
+            robot->Move(100, 180, 0, wanted_speed);
         }
         
         EVqueue.dispatch_once();
