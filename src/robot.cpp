@@ -18,10 +18,6 @@ Robot::~Robot()
     {
         delete m_motors[i]; //delete[] ?
     }
-
-    delete m_wheelAngularSpeedVector;
-    delete m_inverseJacobianKinematicsMatrix;
-    delete m_wantedVelocityVector;
 }
 
 bool Robot::InitializeMotorbase(void)

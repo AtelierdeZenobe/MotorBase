@@ -5,7 +5,6 @@
 #include <cmath>
 #include <istream>
 #include <vector>
-#include "matrix.h"
 #include "motor.h"
 #include "constants.h"
 
@@ -75,10 +74,4 @@ class Robot
     private:   
         EventQueue* m_EVqueue;
         Motor* m_motors[N_MOTOR];
-
-// KINEMATICS Main equation in the pdf : [Theta_dot] = [Jinv] x [u_dot]
-// KINEMATICS Main equation here : [m_wheelAngularSpeedVector] = [m_inverseJacobianKinematicsMatrix] x [wantedVelocityVector]
-        Matrix* m_wheelAngularSpeedVector;
-        Matrix* m_inverseJacobianKinematicsMatrix;
-        Matrix* m_wantedVelocityVector;
 };

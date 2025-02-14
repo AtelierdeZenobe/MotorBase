@@ -10,7 +10,6 @@
 #include <ostream>
 #include "motor.h"
 #include "robot.h"
-#include "matrix.h"
 
 int main()
 {
