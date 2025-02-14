@@ -17,3 +17,4 @@ cmake_build/
 *.log
 *.map
 *.md5
+libs/EasyCat/.hg*

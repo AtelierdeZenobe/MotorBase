@@ -11,6 +11,8 @@
 #include "motor.h"
 #include "robot.h"
 
+#include "EasyCAT.h"
+
 int main()
 {
     std::cout << "\n\nPrint from main" << std::endl;
@@ -37,15 +39,6 @@ int main()
     //robot->Move(500, PI/2, 0, 100, 0);
     //robot->Move(500, 0, 0, 100, 0);
     //robot->Calibrate();
-
-/*
-    std::vector<int8_t> data = {0x00,0x60};
-    auto uartCOM = new UartCOM(PC_10, PC_11);
-    Message * messageOut = new Message(0xE1, SET_ACC, data);
-    Message messageIn;
-    uartCOM->Send(messageOut, messageIn);
-
-*/
 
     EVqueue.dispatch_forever();    
 };
