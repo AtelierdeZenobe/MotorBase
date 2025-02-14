@@ -42,7 +42,12 @@ Serial console:
 
 `make`  
 (compiles, flashes, opens minicom)  
-see Makefile for specifc make options
+see Makefile for specifc make options  
+
+### On raspberry (ethercat master) side:
+Rasp ip is 169.254.250.169  
+`ethercat alias 69 -p 0 #If only one slave is connected, its ID should be 0`  
+`./run.sh`
 
 ## Setup the hardware
 
