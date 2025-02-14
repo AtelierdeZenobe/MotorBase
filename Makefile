@@ -3,7 +3,7 @@ TARGET = NUCLEO_F446RE
 TOOLCHAIN = GCC_ARM
 CXXFLAGS += -Wno-enum-conversion
 
-all : default docs
+all : default minicom
 
 default:
 	mbed-tools compile -m $(TARGET) -t GCC_ARM -f #Configure, compile, flash
@@ -18,7 +18,7 @@ docs:
 	doxygen Doxyfile
 
 minicom:
-	minicom -D /dev/ttyACM0 -b 115200
+	sudo minicom -D /dev/ttyACM0 -b 9600
 
 clean_docs:
 	rm -rf docs/html docs/latex

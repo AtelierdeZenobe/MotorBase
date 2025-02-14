@@ -38,6 +38,12 @@ mbed-tools compile -m NUCLEO_F446RE -t GCC_ARM -f #Configure, compile, flash
 Serial console:  
 `sudo minicom -D /dev/ttyACM0`
 
+## Build & run
+
+`make`  
+(compiles, flashes, opens minicom)  
+see Makefile for specifc make options
+
 ## Setup the hardware
 
 TO UPDATE for MotorBase
@@ -74,3 +80,7 @@ git push
 - Congratulation, you pushed your changes to the new branch remotely. Don't worry, you didn't change any thing in the main branch.
 
 - Never use git merge to merge changes to the main. Instead, create a pull request from GitHub. And ask for help !
+
+## Doc
+[mbed events](https://os.mbed.com/blog/entry/Simplify-your-code-with-mbed-events/)
+

@@ -7,3 +7,13 @@ BUILD
 
 EasyCAT_lib/
 cmake_build/
+
+*.html
+*.js
+*.css
+*.png
+*.dot
+*.svg
+*.log
+*.map
+*.md5
