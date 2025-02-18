@@ -11,41 +11,70 @@
 #include "motor.h"
 #include "robot.h"
 
+#include "EasyCAT.h"
+
+EasyCAT EASYCAT; 
+
 int main()
 {
     std::cout << "\n\nPrint from main" << std::endl;
+
+    if(!EASYCAT.Init())
+    {
+        std::cout << "Easycat failed to init" << std::endl;
+        printf("Init failed \n");
+    }
+    else
+    {
+        std::cout << "Easy cat initialized" << std::endl;
+        printf("Init succesful \n");
+    }
 
     EventQueue EVqueue;
     Thread eventThread;
     eventThread.start(callback(&EVqueue, &EventQueue::dispatch_forever));
 
     auto robot = new Robot(&EVqueue);
-    //robot->InitializeMotorbase();
-    //robot->Calibrate();
-    //robot->SetACC(0x0100);
-    //robot->SetACC(0x11e);
-    //robot->SetPID(0x0650, 0x1, 0x250);
 
     double speed = 100;
     robot->Move(1000, 0, 0, speed, 0);
-    // wait_us(1000000);
-    // robot->Move(1000, 90, 0, speed, 0);
-    // wait_us(1000000);
-    // robot->Move(0, 0, 360, speed, 0);
 
-    // Should move for 10s
-    //robot->Move(500, PI/2, 0, 100, 0);
-    //robot->Move(500, 0, 0, 100, 0);
-    //robot->Calibrate();
+    while(true)
+    {
+        uint8_t status = static_cast<uint8_t>(EASYCAT.MainTask() & 0x7f);
+        if(status < 4)
+        {
+            std::cout << "Incorrect status: " << status << std::endl;
+        }
 
-/*
-    std::vector<int8_t> data = {0x00,0x60};
-    auto uartCOM = new UartCOM(PC_10, PC_11);
-    Message * messageOut = new Message(0xE1, SET_ACC, data);
-    Message messageIn;
-    uartCOM->Send(messageOut, messageIn);
+        static int count = 0;
+        if(count++ % 100 == 0)
+        {
+            printf("wanted distance MSB: %02x\n",EASYCAT.BufferOut.Byte[0]);
+            printf("wanted distance: LSB: %02x\n",EASYCAT.BufferOut.Byte[1]);
+            printf("wanted angle MSB: %02x\n",EASYCAT.BufferOut.Byte[2]);
+            printf("wanted angle LSB: %02x\n",EASYCAT.BufferOut.Byte[3]);
+        }
 
-*/
-
+        EASYCAT.BufferIn.Byte[0]=0x01;
+        EASYCAT.BufferIn.Byte[1]=0x02;
+        EASYCAT.BufferIn.Byte[2]=0x03; 
+    
+        double wanted_speed = static_cast<double>(((EASYCAT.BufferOut.Byte[0] << 8) & 0xF0) | EASYCAT.BufferOut.Byte[1]);
+        printf("wanted_speed %f\n", wanted_speed);
+        //ThisThread::sleep_for(100);
+        if(EASYCAT.BufferOut.Byte[1] % 2 == 0)
+        {
+            robot->Move(100, 0, 0, wanted_speed);
+        }
+        else
+        {
+            robot->Move(100, 180, 0, wanted_speed);
+        }
+        
+        EVqueue.dispatch_once();
+        EVqueue.dispatch_once();
+        EVqueue.dispatch_once();
+    }
     EVqueue.dispatch_forever();    
 };

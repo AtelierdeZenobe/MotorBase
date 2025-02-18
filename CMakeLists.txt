@@ -23,11 +23,16 @@ add_executable(${APP_TARGET} ${ALL_SRC_FILES})
 target_include_directories(${APP_TARGET} PRIVATE
     includes
     Servo42C_uart/includes
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/EasyCat
 )
 
 #add_executable(${APP_TARGET}
 #    *.cpp
 #)
+
+target_sources(${APP_TARGET} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/EasyCat/EasyCAT.cpp
+)
 
 target_link_libraries(${APP_TARGET} PRIVATE
     mbed-os
