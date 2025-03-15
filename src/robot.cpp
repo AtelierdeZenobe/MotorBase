@@ -57,9 +57,10 @@ bool Robot::Move(const double& wanted_distance, const double& wanted_angle, cons
                 +cos(theta+a[i])*wanted_speed*sin(wanted_angle*DEG_TO_RAD)
                 +R*wanted_rotational_speed) // mm * rad/s
                 /r; 
-        printMutex.lock();
-        std::cout << "WHeel " << i << " angular speed: " << W[i] << " rad/s" << std::endl;
-        printMutex.unlock();
+        //printMutex.lock();
+        //std::cout << "WHeel " << i << " angular speed: " << W[i] << " rad/s" << std::endl;
+        //LOG("WHeel %d angular speed: %f rad/s \n", i, W[i]);
+        //printMutex.unlock();
     }
 
     // The number of ticks to rotate for each wheel

@@ -48,29 +48,35 @@ int main()
         }
 
         static int count = 0;
-        if(count++ % 100 == 0)
+
+        if(count++ % 1000 == 0 && false)
         {
             printf("wanted distance MSB: %02x\n",EASYCAT.BufferOut.Byte[0]);
             printf("wanted distance: LSB: %02x\n",EASYCAT.BufferOut.Byte[1]);
             printf("wanted angle MSB: %02x\n",EASYCAT.BufferOut.Byte[2]);
             printf("wanted angle LSB: %02x\n",EASYCAT.BufferOut.Byte[3]);
+            printf("wanted rotation MSB: %02x\n",EASYCAT.BufferOut.Byte[4]);
+            printf("wanted rotation: LSB: %02x\n",EASYCAT.BufferOut.Byte[5]);
+            printf("wanted speed MSB: %02x\n",EASYCAT.BufferOut.Byte[6]);
+            printf("wanted speed LSB: %02x\n",EASYCAT.BufferOut.Byte[7]);
         }
 
         EASYCAT.BufferIn.Byte[0]=0x01;
         EASYCAT.BufferIn.Byte[1]=0x02;
         EASYCAT.BufferIn.Byte[2]=0x03; 
     
-        double wanted_speed = static_cast<double>(((EASYCAT.BufferOut.Byte[0] << 8) & 0xF0) | EASYCAT.BufferOut.Byte[1]);
-        printf("wanted_speed %f\n", wanted_speed);
-        //ThisThread::sleep_for(100);
-        if(EASYCAT.BufferOut.Byte[1] % 2 == 0)
+        double wanted_distance = static_cast<double>(((EASYCAT.BufferOut.Byte[0] << 8) & 0xFF00) | EASYCAT.BufferOut.Byte[1]);
+        double wanted_angle = static_cast<double>(((EASYCAT.BufferOut.Byte[2] << 8) & 0xFF00) | EASYCAT.BufferOut.Byte[3]);
+        double wanted_rotation = static_cast<double>(((EASYCAT.BufferOut.Byte[4] << 8) & 0xFF00) | EASYCAT.BufferOut.Byte[5]);
+        double wanted_speed = static_cast<double>(((EASYCAT.BufferOut.Byte[6] << 8) & 0xFF00) | EASYCAT.BufferOut.Byte[7]);
+        if(count++ % 1001 == 0 && true)
         {
-            robot->Move(100, 0, 0, wanted_speed);
+            printf("wanted_distance %f\n", wanted_distance);
+            printf("wanted_angle %f\n", wanted_angle);
+            printf("wanted_rotation %f\n", wanted_rotation);
+            printf("wanted_speed %f\n", wanted_speed);
         }
-        else
-        {
-            robot->Move(100, 180, 0, wanted_speed);
-        }
+        robot->Move(wanted_distance, wanted_angle, wanted_rotation, wanted_speed);
         
         EVqueue.dispatch_once();
         EVqueue.dispatch_once();
