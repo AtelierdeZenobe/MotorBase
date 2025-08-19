@@ -19,8 +19,8 @@
 
 
 
-#include "/home/py/MotorBase/mbed-os/mbed.h"
-#include "EasyCAT.h"                         
+#include "../../mbed-os/mbed.h"
+#include "EasyCAT.h"
 
 
 static DigitalOut * SpiCs;								 	
